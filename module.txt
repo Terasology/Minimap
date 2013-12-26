@@ -1,0 +1,9 @@
+{
+    "id" : "Minimap",
+    "version" : "0.1.0",
+    "author" : "",
+    "displayName" : "Minimap",
+    "description" : "",
+    "dependencies" : [],
+    "isServerSideOnly" : false
+}
