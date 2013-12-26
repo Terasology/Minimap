@@ -1,9 +1,9 @@
 {
     "id" : "Minimap",
     "version" : "0.1.0",
-    "author" : "",
+    "author" : "mkienenb",
     "displayName" : "Minimap",
-    "description" : "",
+    "description" : "This module adds a minimap to the UI using the HUD Element system (gui, not NUI).  M toggles the map visibility.  Z switches view-plane axes",
     "dependencies" : [],
     "isServerSideOnly" : false
 }
