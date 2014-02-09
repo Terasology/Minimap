@@ -158,6 +158,8 @@ public class MinimapGrid extends CoreWidget {
 
         if (null != cells) {
             Vector2i cellSize = canvas.calculatePreferredSize(cells[0][0]);
+            
+            canvas.drawBackground();
 
             for (int row = 0; row < numberOfRows; row++) {
                 for (int column = 0; column < numberOfColumns; column++) {
