@@ -20,9 +20,15 @@ import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.systems.ComponentSystem;
 import org.terasology.entitySystem.systems.RegisterSystem;
+import org.terasology.input.BindButtonEvent;
+import org.terasology.input.binds.minimap.ToggleMinimapAxisButton;
 import org.terasology.input.binds.minimap.ToggleMinimapButton;
 import org.terasology.logic.characters.CharacterComponent;
+import org.terasology.minimap.rendering.nui.layers.MinimapGrid;
+import org.terasology.minimap.rendering.nui.layers.MinimapHUDElement;
 import org.terasology.registry.In;
+import org.terasology.rendering.nui.AbstractWidget;
+import org.terasology.rendering.nui.ControlWidget;
 import org.terasology.rendering.nui.NUIManager;
 
 /**
@@ -43,7 +49,7 @@ public class MinimapSystem implements ComponentSystem {
 
     @Override
     public void initialise() {
-//        nuiManager.getHUD().addHUDElement(HUD_ELEMENT_MAP_ID);
+        nuiManager.getHUD().addHUDElement(HUD_ELEMENT_MAP_ID);
     }
 
     @Override
@@ -53,7 +59,25 @@ public class MinimapSystem implements ComponentSystem {
     @ReceiveEvent(components = {CharacterComponent.class})
     public void onToggleMinimapButton(ToggleMinimapButton event, EntityRef entity) {
         if (event.isDown()) {
-            nuiManager.toggleScreen(MINIMAP_SCREEN_ID);
+            ControlWidget element = nuiManager.getHUD().findHUDElementWidget(HUD_ELEMENT_MAP_ID);
+            if (null != element) {
+                AbstractWidget widget = (AbstractWidget)element;
+                widget.setVisible(!widget.isVisible());
+            }
+
+            event.consume();
+        }
+    }
+
+    @ReceiveEvent(components = {CharacterComponent.class})
+    public void onToggleMinimapAxisButton(ToggleMinimapAxisButton event, EntityRef entity) {
+        if (event.isDown()) {
+            ControlWidget element = nuiManager.getHUD().findHUDElementWidget(HUD_ELEMENT_MAP_ID);
+            if (null != element) {
+                MinimapHUDElement minimapHUDElement = (MinimapHUDElement)element;
+                minimapHUDElement.onBindEvent(event);
+            }
+
             event.consume();
         }
     }

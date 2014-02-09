@@ -24,8 +24,10 @@ import javax.vecmath.Vector3f;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.terasology.registry.CoreRegistry;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.logic.location.LocationComponent;
+import org.terasology.logic.players.LocalPlayer;
 import org.terasology.math.Rect2i;
 import org.terasology.math.Vector2i;
 import org.terasology.math.Vector3i;
@@ -68,8 +70,13 @@ public class MinimapGrid extends CoreWidget {
     @Override
     public void update(float delta) {
         super.update(delta);
-
         if (null == cells) {
+            initialize();
+        }
+    }
+
+    private void initialize() {
+
             int rowCenter = numberOfRows / 2;
             int columnCenter = numberOfColumns / 2;
 
@@ -81,21 +88,54 @@ public class MinimapGrid extends CoreWidget {
                     MinimapCell cell = new MinimapCell();
                     cells[row][column] = cell;
 
+//                    int rowInverted = (cells.length - row);
+//                    int columnInverted = (cells[row].length - column);
+//                    Vector3i coordinateAdjustment;
+//                    switch (displayAxisType) {
+//                            case XZ_AXIS: // top down view
+//                                coordinateAdjustment = new Vector3i(rowInverted, 0, column);
+//                                    break;
+//                            case XY_AXIS:
+//                                coordinateAdjustment = new Vector3i(columnInverted, rowInverted, 0);
+//                                    break;
+//                            case YZ_AXIS:
+//                                coordinateAdjustment = new Vector3i(0, rowInverted, columnInverted);
+//                                    break;
+//                            default:
+//                                    throw new RuntimeException("displayAxisType containts invalid value");
+//                    }
+//                  cell.setCoordinateAdjustment(coordinateAdjustment);
+                    
+
                     cell.setRelativeCellLocation(new Vector2i((column - columnCenter), (row - rowCenter)));
+                    
                     cell.bindCenterLocation(new ReadOnlyBinding<Vector3i>() {
                         @Override
                         public Vector3i get() {
-                            EntityRef entity = getTargetEntity();
-                            if (null == entity) {
-                                logger.error("No target entity");
-                                return null;
+                            
+                            Vector3f worldPosition = null;
+                            
+                            // TODO: Figure out how to fix this
+                            // Currently the character entity doesn't have a valid LocationComponent, which seems weird.
+                            // So skip allowing arbitrary entities for now.
+
+//                            EntityRef entity = getTargetEntity();
+//                            if (null != entity) {
+//                                LocationComponent locationComponent = entity.getComponent(LocationComponent.class);
+//                                if (null != locationComponent) {
+//                                    worldPosition = locationComponent.getWorldPosition();
+//                                } else {
+//                                    logger.error("No locationComponent for target entity " + entity);
+//                                }
+//                            } else {
+//                                logger.error("No target entity");
+//                            }
+
+                            if (null == worldPosition) {
+                                LocalPlayer localPlayer = CoreRegistry.get(LocalPlayer.class);
+                                worldPosition = localPlayer.getPosition();
                             }
-                            LocationComponent locationComponent = entity.getComponent(LocationComponent.class);
-                            if (null == locationComponent) {
-                                logger.error("No locationComponent for target entity " + entity);
-                                return null;
-                            }
-                            Vector3f worldPosition = locationComponent.getWorldPosition();
+                            
                             Vector3i blockPosition = new Vector3i(worldPosition);
                             blockPosition.sub(0, 1, 0);
                             return blockPosition;
@@ -109,11 +149,14 @@ public class MinimapGrid extends CoreWidget {
                     });
                 }
             }
-        }
     }
 
     @Override
     public void onDraw(Canvas canvas) {
+        if (null == cells) {
+            initialize();
+        }
+
         if (null != cells) {
             Vector2i cellSize = canvas.calculatePreferredSize(cells[0][0]);
 
@@ -130,6 +173,10 @@ public class MinimapGrid extends CoreWidget {
 
     @Override
     public Vector2i getPreferredContentSize(Canvas canvas, Vector2i sizeHint) {
+        if (null == cells) {
+            initialize();
+        }
+
         if (null != cells) {
             Vector2i cellSize = canvas.calculatePreferredSize(cells[0][0]);
             return new Vector2i(numberOfRows * cellSize.x, numberOfColumns * cellSize.y);
@@ -139,6 +186,10 @@ public class MinimapGrid extends CoreWidget {
 
     @Override
     public Iterator<UIWidget> iterator() {
+        if (null == cells) {
+            initialize();
+        }
+
         List<MinimapCell> cellList;
         if (null != cells) {
             cellList = new ArrayList<MinimapCell>(numberOfRows * numberOfColumns);
@@ -197,7 +248,6 @@ public class MinimapGrid extends CoreWidget {
                 displayAxisType = DisplayAxisType.XY_AXIS;
                 break;
         }
-
         // TODO: force redraw?
     }
 }

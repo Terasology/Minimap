@@ -34,7 +34,6 @@ import org.terasology.world.WorldProvider;
 import org.terasology.world.block.Block;
 import org.terasology.world.block.BlockAppearance;
 import org.terasology.world.block.BlockPart;
-import org.terasology.world.block.loader.WorldAtlas;
 
 /**
  * @author Immortius
@@ -65,22 +64,24 @@ public class MinimapCell extends CoreWidget {
 
                 WorldProvider worldProvider = CoreRegistry.get(WorldProvider.class);
 
-                Vector3i relativeLocation;
                 DisplayAxisType displayAxis = getDisplayAxisType();
+//                Vector3i coordinateAdjustment = getCoordinateAdjustment(displayAxis);
+                Vector3i relativeLocation;
                 switch (displayAxis) {
                     case XZ_AXIS: // top down view
-                        relativeLocation = new Vector3i(relativeCellLocation.x, 0, relativeCellLocation.y);
+                        relativeLocation = new Vector3i(-relativeCellLocation.x, 0, relativeCellLocation.y);
                         break;
                     case XY_AXIS:
-                        relativeLocation = new Vector3i(relativeCellLocation.x, relativeCellLocation.y, 0);
+                        relativeLocation = new Vector3i(-relativeCellLocation.x, -relativeCellLocation.y, 0);
                         break;
                     case YZ_AXIS:
-                        relativeLocation = new Vector3i(0, relativeCellLocation.x, relativeCellLocation.y);
+                        relativeLocation = new Vector3i(0, -relativeCellLocation.x, -relativeCellLocation.y);
                         break;
                     default:
                         throw new RuntimeException("displayAxisType containts invalid value");
                 }
                 relativeLocation.add(centerLocation);
+//                relativeLocation.add(coordinateAdjustment);
                 Block block = worldProvider.getBlock(relativeLocation);
                 if (null != block) {
                     // TODO: warning, no block
