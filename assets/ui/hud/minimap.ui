@@ -1,0 +1,35 @@
+{
+    "type" : "MinimapHudElement",
+    "id" : "minimap",
+    "contents" : {
+        "type" : "relativeLayout",
+        "contents" : [
+            {
+                "type" : "ColumnLayout",
+                "contents" : [
+        			{
+        				"type" : "UILabel",
+        				"id" : "orientationLabel",
+        				"text" : "x-z orientation"
+        			},
+                    {
+                        "type" : "MinimapGrid",
+                        "id" : "minimapGrid",
+                        "numberOfColumns" : 15,
+                        "numberOfRows" : 15
+                    }
+                ],
+                "layoutInfo" : {
+                    "use-content-width" : true,
+                    "use-content-height" : true,
+                    "position-left" : {
+                        "target" : "LEFT"
+                    },
+                    "position-top" : {
+                        "target" : "TOP"
+                    }
+                }
+            }
+        ]
+    }
+}
