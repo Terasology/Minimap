@@ -26,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.registry.CoreRegistry;
 import org.terasology.entitySystem.entity.EntityRef;
-import org.terasology.logic.location.LocationComponent;
 import org.terasology.logic.players.LocalPlayer;
 import org.terasology.math.Rect2i;
 import org.terasology.math.Vector2i;
@@ -249,5 +248,9 @@ public class MinimapGrid extends CoreWidget {
                 break;
         }
         // TODO: force redraw?
+    }
+
+    public DisplayAxisType getDisplayAxisType() {
+        return displayAxisType;
     }
 }

@@ -72,7 +72,7 @@ public class MinimapCell extends CoreWidget {
                         relativeLocation = new Vector3i(-relativeCellLocation.x, 0, relativeCellLocation.y);
                         break;
                     case XY_AXIS:
-                        relativeLocation = new Vector3i(-relativeCellLocation.x, -relativeCellLocation.y, 0);
+                        relativeLocation = new Vector3i(-relativeCellLocation.y, -relativeCellLocation.x, 0);
                         break;
                     case YZ_AXIS:
                         relativeLocation = new Vector3i(0, -relativeCellLocation.x, -relativeCellLocation.y);

@@ -18,6 +18,7 @@ package org.terasology.minimap.rendering.nui.layers;
 import org.terasology.math.Vector2i;
 import org.terasology.rendering.assets.texture.TextureRegion;
 import org.terasology.rendering.nui.Canvas;
+import org.terasology.rendering.nui.Color;
 import org.terasology.rendering.nui.CoreWidget;
 import org.terasology.rendering.nui.databinding.Binding;
 import org.terasology.rendering.nui.databinding.DefaultBinding;
@@ -27,19 +28,22 @@ import org.terasology.rendering.nui.databinding.DefaultBinding;
  */
 public class MapLocationIcon extends CoreWidget {
 
+    private static final int MINIMAP_TILE_SIZE = 16;
+    private static final float MINIMAP_TRANSPARENCY = 0.5f;
+    private static final Color MINIMAP_TRANSPARENCY_COLOR = Color.WHITE.alterAlpha((int)(MINIMAP_TRANSPARENCY * 256));
+    
     private Binding<TextureRegion> textureRegionBinding = new DefaultBinding<>();
 
     @Override
     public void onDraw(Canvas canvas) {
         if (getIcon() != null) {
-            canvas.drawTexture(getIcon());
+            canvas.drawTexture(getIcon(), MINIMAP_TRANSPARENCY_COLOR);
         }
     }
 
     @Override
     public Vector2i getPreferredContentSize(Canvas canvas, Vector2i sizeHint) {
-        // TODO: should we have a better way to determine this?
-        return new Vector2i(16,16);
+        return new Vector2i(MINIMAP_TILE_SIZE, MINIMAP_TILE_SIZE);
     }
 
     public void bindIcon(Binding<TextureRegion> binding) {

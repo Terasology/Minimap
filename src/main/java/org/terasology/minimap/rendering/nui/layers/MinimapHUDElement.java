@@ -24,7 +24,9 @@ import org.terasology.input.binds.minimap.ToggleMinimapButton;
 import org.terasology.logic.players.LocalPlayer;
 import org.terasology.registry.In;
 import org.terasology.rendering.nui.ControlWidget;
+import org.terasology.rendering.nui.databinding.ReadOnlyBinding;
 import org.terasology.rendering.nui.layers.hud.CoreHudWidget;
+import org.terasology.rendering.nui.widgets.UILabel;
 
 /**
  * @author mkienenb
@@ -33,18 +35,38 @@ public class MinimapHUDElement  extends CoreHudWidget implements ControlWidget {
 
     private static final Logger logger = LoggerFactory.getLogger(MinimapHUDElement.class);
 
-    private static final String MINIMAP_WIDGET_ID = "minimapGrid";
+    private static final String MINIMAP_GRID_WIDGET_ID = "minimapGrid";
+    private static final String MINIMAP_LABEL_WIDGET_ID = "orientationLabel";
 
     @In
     private LocalPlayer localPlayer;
 
     @Override
     public void initialise() {
-        MinimapGrid minimapGrid = find(MINIMAP_WIDGET_ID, MinimapGrid.class);
+        final MinimapGrid minimapGrid = find(MINIMAP_GRID_WIDGET_ID, MinimapGrid.class);
         minimapGrid.setCellOffset(10);
 
         EntityRef characterEntity = localPlayer.getCharacterEntity();
         minimapGrid.setTargetEntity(characterEntity);
+
+        UILabel orientationLabel = find(MINIMAP_LABEL_WIDGET_ID, UILabel.class);
+        orientationLabel.bindText(new ReadOnlyBinding<String>() {
+            
+            @Override
+            public String get() {
+                switch (minimapGrid.getDisplayAxisType()) {
+                    case XY_AXIS:
+                        return "x-y orientation";
+                    case XZ_AXIS:
+                        return "x-z orientation";
+                    case YZ_AXIS:
+                        return "y-z orientation";
+                    default:
+                        return "error determining display orientation";
+                }
+            }
+        });
+
     }
 
     @Override
@@ -53,7 +75,7 @@ public class MinimapHUDElement  extends CoreHudWidget implements ControlWidget {
             setVisible(!isVisible());
             event.consume();
         } else if (event instanceof ToggleMinimapAxisButton && event.isDown()) {
-            MinimapGrid minimapGrid = find(MINIMAP_WIDGET_ID, MinimapGrid.class);
+            MinimapGrid minimapGrid = find(MINIMAP_GRID_WIDGET_ID, MinimapGrid.class);
             minimapGrid.toggleAxis();
             event.consume();
         }
