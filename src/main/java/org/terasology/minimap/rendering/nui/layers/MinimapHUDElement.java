@@ -15,8 +15,6 @@
  */
 package org.terasology.minimap.rendering.nui.layers;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.input.BindButtonEvent;
 import org.terasology.input.binds.minimap.ToggleMinimapAxisButton;
@@ -31,9 +29,7 @@ import org.terasology.rendering.nui.widgets.UILabel;
 /**
  * @author mkienenb
  */
-public class MinimapHUDElement  extends CoreHudWidget implements ControlWidget {
-
-    private static final Logger logger = LoggerFactory.getLogger(MinimapHUDElement.class);
+public class MinimapHUDElement extends CoreHudWidget implements ControlWidget {
 
     private static final String MINIMAP_GRID_WIDGET_ID = "minimapGrid";
     private static final String MINIMAP_LABEL_WIDGET_ID = "orientationLabel";
@@ -51,7 +47,7 @@ public class MinimapHUDElement  extends CoreHudWidget implements ControlWidget {
 
         UILabel orientationLabel = find(MINIMAP_LABEL_WIDGET_ID, UILabel.class);
         orientationLabel.bindText(new ReadOnlyBinding<String>() {
-            
+
             @Override
             public String get() {
                 switch (minimapGrid.getDisplayAxisType()) {

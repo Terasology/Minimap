@@ -17,6 +17,8 @@ package org.terasology.minimap.rendering.nui.layers;
 
 import javax.vecmath.Vector2f;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.terasology.asset.Assets;
 import org.terasology.math.Vector2i;
 import org.terasology.math.Vector3i;
@@ -39,6 +41,8 @@ import org.terasology.world.block.BlockPart;
  * @author Immortius
  */
 public class MinimapCell extends CoreWidget {
+
+    private static final Logger logger = LoggerFactory.getLogger(MinimapCell.class);
 
     private final Texture textureAtlas;
     private final TextureRegion questionMarkTextureRegion;
@@ -65,7 +69,6 @@ public class MinimapCell extends CoreWidget {
                 WorldProvider worldProvider = CoreRegistry.get(WorldProvider.class);
 
                 DisplayAxisType displayAxis = getDisplayAxisType();
-//                Vector3i coordinateAdjustment = getCoordinateAdjustment(displayAxis);
                 Vector3i relativeLocation;
                 switch (displayAxis) {
                     case XZ_AXIS: // top down view
@@ -81,10 +84,8 @@ public class MinimapCell extends CoreWidget {
                         throw new RuntimeException("displayAxisType containts invalid value");
                 }
                 relativeLocation.add(centerLocation);
-//                relativeLocation.add(coordinateAdjustment);
                 Block block = worldProvider.getBlock(relativeLocation);
                 if (null != block) {
-                    // TODO: warning, no block
                     BlockAppearance primaryAppearance = block.getPrimaryAppearance();
 
                     BlockPart blockPart;
@@ -103,17 +104,18 @@ public class MinimapCell extends CoreWidget {
                     }
 
                     // TODO: security issues
-//                    WorldAtlas worldAtlas = CoreRegistry.get(WorldAtlas.class);
-//                    float tileSize = worldAtlas.getRelativeTileSize();
+                    //                    WorldAtlas worldAtlas = CoreRegistry.get(WorldAtlas.class);
+                    //                    float tileSize = worldAtlas.getRelativeTileSize();
 
                     float tileSize = 16f / 256f; // 256f could be replaced by textureAtlas.getWidth();
-                    
+
                     Vector2f textureAtlasPos = primaryAppearance.getTextureAtlasPos(blockPart);
 
                     TextureRegion textureRegion = new BasicTextureRegion(textureAtlas, textureAtlasPos, new Vector2f(tileSize, tileSize));
                     return textureRegion;
                 }
-
+                
+                logger.info("No block found for location " + relativeLocation);
                 return questionMarkTextureRegion;
             }
         });

@@ -25,8 +25,7 @@ import org.terasology.input.binds.minimap.ToggleMinimapButton;
 import org.terasology.logic.characters.CharacterComponent;
 import org.terasology.minimap.rendering.nui.layers.MinimapHUDElement;
 import org.terasology.registry.In;
-import org.terasology.rendering.nui.AbstractWidget;
-import org.terasology.rendering.nui.ControlWidget;
+//import org.terasology.rendering.nui.ControlWidget;
 import org.terasology.rendering.nui.NUIManager;
 
 /**
@@ -36,18 +35,16 @@ import org.terasology.rendering.nui.NUIManager;
 public class MinimapSystem implements ComponentSystem {
 
     public static final String HUD_ELEMENT_MAP_ID = "minimap";
-    private static final String MINIMAP_SCREEN_ID = "minimap:minimapScreen";
+    
+    private MinimapHUDElement minimapHUDElement;
 
     @In
     private NUIManager nuiManager;
 
-
-    @In
-    private LocalPlayer localPlayer;
-
     @Override
     public void initialise() {
-        nuiManager.getHUD().addHUDElement(HUD_ELEMENT_MAP_ID);
+        // TODO: get rid of return value assignment when findHUDElementWidget is in engine
+        minimapHUDElement = (MinimapHUDElement) nuiManager.getHUD().addHUDElement(HUD_ELEMENT_MAP_ID);
     }
 
     @Override
@@ -57,10 +54,12 @@ public class MinimapSystem implements ComponentSystem {
     @ReceiveEvent(components = {CharacterComponent.class})
     public void onToggleMinimapButton(ToggleMinimapButton event, EntityRef entity) {
         if (event.isDown()) {
-            ControlWidget element = nuiManager.getHUD().findHUDElementWidget(HUD_ELEMENT_MAP_ID);
-            if (null != element) {
-                AbstractWidget widget = (AbstractWidget)element;
-                widget.setVisible(!widget.isVisible());
+//            ControlWidget element = nuiManager.getHUD().findHUDElementWidget(HUD_ELEMENT_MAP_ID);
+//            if (null != element) {
+//                MinimapHUDElement minimapHUDElement = (MinimapHUDElement) element;
+            {
+                // TODO: get rid of return value assignment when findHUDElementWidget is in engine
+                minimapHUDElement.setVisible(!minimapHUDElement.isVisible());
             }
 
             event.consume();
@@ -70,9 +69,11 @@ public class MinimapSystem implements ComponentSystem {
     @ReceiveEvent(components = {CharacterComponent.class})
     public void onToggleMinimapAxisButton(ToggleMinimapAxisButton event, EntityRef entity) {
         if (event.isDown()) {
-            ControlWidget element = nuiManager.getHUD().findHUDElementWidget(HUD_ELEMENT_MAP_ID);
-            if (null != element) {
-                MinimapHUDElement minimapHUDElement = (MinimapHUDElement)element;
+//            ControlWidget element = nuiManager.getHUD().findHUDElementWidget(HUD_ELEMENT_MAP_ID);
+//            if (null != element) {
+//                MinimapHUDElement minimapHUDElement = (MinimapHUDElement) element;
+            {
+                // TODO: get rid of return value assignment when findHUDElementWidget is in engine
                 minimapHUDElement.onBindEvent(event);
             }
 

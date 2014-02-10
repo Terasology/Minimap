@@ -30,8 +30,8 @@ public class MapLocationIcon extends CoreWidget {
 
     private static final int MINIMAP_TILE_SIZE = 16;
     private static final float MINIMAP_TRANSPARENCY = 0.5f;
-    private static final Color MINIMAP_TRANSPARENCY_COLOR = Color.WHITE.alterAlpha((int)(MINIMAP_TRANSPARENCY * 256));
-    
+    private static final Color MINIMAP_TRANSPARENCY_COLOR = Color.WHITE.alterAlpha((int) (MINIMAP_TRANSPARENCY * 256));
+
     private Binding<TextureRegion> textureRegionBinding = new DefaultBinding<>();
 
     @Override

@@ -43,7 +43,7 @@ public class MinimapScreen extends CoreScreenLayer {
         EntityRef characterEntity = localPlayer.getCharacterEntity();
         if (!characterEntity.hasComponent(LocationComponent.class)) {
             logger.error("localPlayer.getCharacterEntity() has no location component");
-             return;
+            return;
         }
 
         MinimapGrid minimapGrid = find(MINIMAP_WIDGET_ID, MinimapGrid.class);
