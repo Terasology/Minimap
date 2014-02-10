@@ -20,6 +20,8 @@ import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.systems.ComponentSystem;
 import org.terasology.entitySystem.systems.RegisterSystem;
+import org.terasology.input.binds.minimap.DecreaseOffsetButton;
+import org.terasology.input.binds.minimap.IncreaseOffsetButton;
 import org.terasology.input.binds.minimap.ToggleMinimapAxisButton;
 import org.terasology.input.binds.minimap.ToggleMinimapButton;
 import org.terasology.logic.characters.CharacterComponent;
@@ -35,7 +37,7 @@ import org.terasology.rendering.nui.NUIManager;
 public class MinimapSystem implements ComponentSystem {
 
     public static final String HUD_ELEMENT_MAP_ID = "minimap";
-    
+
     private MinimapHUDElement minimapHUDElement;
 
     @In
@@ -54,9 +56,9 @@ public class MinimapSystem implements ComponentSystem {
     @ReceiveEvent(components = {CharacterComponent.class})
     public void onToggleMinimapButton(ToggleMinimapButton event, EntityRef entity) {
         if (event.isDown()) {
-//            ControlWidget element = nuiManager.getHUD().findHUDElementWidget(HUD_ELEMENT_MAP_ID);
-//            if (null != element) {
-//                MinimapHUDElement minimapHUDElement = (MinimapHUDElement) element;
+            //            ControlWidget element = nuiManager.getHUD().findHUDElementWidget(HUD_ELEMENT_MAP_ID);
+            //            if (null != element) {
+            //                MinimapHUDElement minimapHUDElement = (MinimapHUDElement) element;
             {
                 // TODO: get rid of return value assignment when findHUDElementWidget is in engine
                 minimapHUDElement.setVisible(!minimapHUDElement.isVisible());
@@ -67,11 +69,41 @@ public class MinimapSystem implements ComponentSystem {
     }
 
     @ReceiveEvent(components = {CharacterComponent.class})
+    public void onIncreaseOffsetButton(IncreaseOffsetButton event, EntityRef entity) {
+        if (event.isDown()) {
+            //            ControlWidget element = nuiManager.getHUD().findHUDElementWidget(HUD_ELEMENT_MAP_ID);
+            //            if (null != element) {
+            //                MinimapHUDElement minimapHUDElement = (MinimapHUDElement) element;
+            {
+                // TODO: get rid of return value assignment when findHUDElementWidget is in engine
+                minimapHUDElement.onBindEvent(event);
+            }
+
+            event.consume();
+        }
+    }
+
+    @ReceiveEvent(components = {CharacterComponent.class})
+    public void onDecreaseOffsetButton(DecreaseOffsetButton event, EntityRef entity) {
+        if (event.isDown()) {
+            //            ControlWidget element = nuiManager.getHUD().findHUDElementWidget(HUD_ELEMENT_MAP_ID);
+            //            if (null != element) {
+            //                MinimapHUDElement minimapHUDElement = (MinimapHUDElement) element;
+            {
+                // TODO: get rid of return value assignment when findHUDElementWidget is in engine
+                minimapHUDElement.onBindEvent(event);
+            }
+
+            event.consume();
+        }
+    }
+
+    @ReceiveEvent(components = {CharacterComponent.class})
     public void onToggleMinimapAxisButton(ToggleMinimapAxisButton event, EntityRef entity) {
         if (event.isDown()) {
-//            ControlWidget element = nuiManager.getHUD().findHUDElementWidget(HUD_ELEMENT_MAP_ID);
-//            if (null != element) {
-//                MinimapHUDElement minimapHUDElement = (MinimapHUDElement) element;
+            //            ControlWidget element = nuiManager.getHUD().findHUDElementWidget(HUD_ELEMENT_MAP_ID);
+            //            if (null != element) {
+            //                MinimapHUDElement minimapHUDElement = (MinimapHUDElement) element;
             {
                 // TODO: get rid of return value assignment when findHUDElementWidget is in engine
                 minimapHUDElement.onBindEvent(event);

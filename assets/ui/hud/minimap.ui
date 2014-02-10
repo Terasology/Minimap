@@ -17,6 +17,10 @@
                         "id" : "minimapGrid",
                         "numberOfColumns" : 15,
                         "numberOfRows" : 15
+                    },
+                    {
+                        "type" : "UISlider",
+                        "id" : "minimapOffsetSlider"
                     }
                 ],
                 "layoutInfo" : {

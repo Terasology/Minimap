@@ -114,7 +114,7 @@ public class MinimapCell extends CoreWidget {
                     TextureRegion textureRegion = new BasicTextureRegion(textureAtlas, textureAtlasPos, new Vector2f(tileSize, tileSize));
                     return textureRegion;
                 }
-                
+
                 logger.info("No block found for location " + relativeLocation);
                 return questionMarkTextureRegion;
             }

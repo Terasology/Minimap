@@ -53,6 +53,7 @@ public class MinimapGrid extends CoreWidget {
 
     private Binding<EntityRef> targetEntityBinding = new DefaultBinding<>(EntityRef.NULL);
     private Binding<Integer> cellOffsetBinding = new DefaultBinding<>(0);
+    private Binding<Integer> viewingAxisOffsetBinding = new DefaultBinding<>(0);
 
     public MinimapGrid() {
     }
@@ -72,8 +73,8 @@ public class MinimapGrid extends CoreWidget {
 
     private void initialize() {
 
-        int rowCenter = (int)((numberOfRows + 0.5f) / 2f);
-        int columnCenter = (int)((numberOfColumns + 0.5f) / 2f);
+        int rowCenter = (int) ((numberOfRows + 0.5f) / 2f);
+        int columnCenter = (int) ((numberOfColumns + 0.5f) / 2f);
 
         cells = new MinimapCell[numberOfRows][numberOfColumns];
         for (int row = 0; row < numberOfRows; row++) {
@@ -115,6 +116,19 @@ public class MinimapGrid extends CoreWidget {
                         Vector3i blockPosition = new Vector3i(Math.round(worldPosition.x), Math.round(worldPosition.y), Math.round(worldPosition.z));
                         // From top view, see what we're walking on, not what's at knee level
                         blockPosition.sub(0, 1, 0);
+
+                        int offset = getViewingAxisOffset();
+                        switch (displayAxisType) {
+                            case XY_AXIS:
+                                blockPosition.add(0, 0, offset);
+                                break;
+                            case XZ_AXIS:
+                                blockPosition.add(0, offset, 0);
+                                break;
+                            case YZ_AXIS:
+                                blockPosition.add(offset, 0, 0);
+                                break;
+                        }
                         return blockPosition;
                     }
                 });
@@ -231,5 +245,17 @@ public class MinimapGrid extends CoreWidget {
 
     public DisplayAxisType getDisplayAxisType() {
         return displayAxisType;
+    }
+
+    public int getViewingAxisOffset() {
+        return viewingAxisOffsetBinding.get();
+    }
+
+    public void setViewingAxisOffset(int val) {
+        viewingAxisOffsetBinding.set(val);
+    }
+
+    public void bindViewingAxisOffset(ReadOnlyBinding<Integer> offsetBinding) {
+        viewingAxisOffsetBinding = offsetBinding;
     }
 }
