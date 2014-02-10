@@ -72,8 +72,8 @@ public class MinimapGrid extends CoreWidget {
 
     private void initialize() {
 
-        int rowCenter = numberOfRows / 2;
-        int columnCenter = numberOfColumns / 2;
+        int rowCenter = (int)((numberOfRows + 0.5f) / 2f);
+        int columnCenter = (int)((numberOfColumns + 0.5f) / 2f);
 
         cells = new MinimapCell[numberOfRows][numberOfColumns];
         for (int row = 0; row < numberOfRows; row++) {
@@ -112,7 +112,8 @@ public class MinimapGrid extends CoreWidget {
                             worldPosition = localPlayer.getPosition();
                         }
 
-                        Vector3i blockPosition = new Vector3i(worldPosition);
+                        Vector3i blockPosition = new Vector3i(Math.round(worldPosition.x), Math.round(worldPosition.y), Math.round(worldPosition.z));
+                        // From top view, see what we're walking on, not what's at knee level
                         blockPosition.sub(0, 1, 0);
                         return blockPosition;
                     }
