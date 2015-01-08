@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 MovingBlocks
+ * Copyright 2015 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,12 @@
  */
 package org.terasology.minimap.rendering.nui.layers;
 
-import javax.vecmath.Vector2f;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.asset.Assets;
 import org.terasology.math.Vector2i;
 import org.terasology.math.Vector3i;
+import org.terasology.math.geom.Vector2f;
 import org.terasology.minimap.DisplayAxisType;
 import org.terasology.registry.CoreRegistry;
 import org.terasology.rendering.assets.texture.BasicTextureRegion;

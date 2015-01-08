@@ -20,13 +20,12 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.vecmath.Vector3f;
-
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.logic.players.LocalPlayer;
 import org.terasology.math.Rect2i;
 import org.terasology.math.Vector2i;
 import org.terasology.math.Vector3i;
+import org.terasology.math.geom.Vector3f;
 import org.terasology.minimap.DisplayAxisType;
 import org.terasology.registry.CoreRegistry;
 import org.terasology.rendering.nui.Canvas;
