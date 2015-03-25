@@ -19,7 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.asset.Assets;
 import org.terasology.math.Vector2i;
-import org.terasology.math.Vector3i;
+import org.terasology.math.geom.Vector3i;
 import org.terasology.math.geom.Vector2f;
 import org.terasology.minimap.DisplayAxisType;
 import org.terasology.registry.CoreRegistry;
