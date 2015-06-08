@@ -54,8 +54,8 @@ public class MinimapCell extends CoreWidget {
 
     public MinimapCell() {
 
-        textureAtlas = Assets.getTexture("engine:terrain");
-        questionMarkTextureRegion = Assets.getTextureRegion("engine:items.questionMark");
+        textureAtlas = Assets.getTexture("engine:terrain").get();
+        questionMarkTextureRegion = Assets.getTextureRegion("engine:items.questionMark").get();
 
         mapLocationIcon.bindIcon(new ReadOnlyBinding<TextureRegion>() {
             @Override
