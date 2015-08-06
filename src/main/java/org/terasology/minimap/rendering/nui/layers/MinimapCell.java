@@ -18,7 +18,7 @@ package org.terasology.minimap.rendering.nui.layers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.asset.Assets;
-import org.terasology.math.Vector2i;
+import org.terasology.math.geom.Vector2i;
 import org.terasology.math.geom.Vector3i;
 import org.terasology.math.geom.Vector2f;
 import org.terasology.minimap.DisplayAxisType;

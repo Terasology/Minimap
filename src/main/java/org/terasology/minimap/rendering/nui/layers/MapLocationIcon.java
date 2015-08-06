@@ -15,7 +15,7 @@
  */
 package org.terasology.minimap.rendering.nui.layers;
 
-import org.terasology.math.Vector2i;
+import org.terasology.math.geom.Vector2i;
 import org.terasology.rendering.assets.texture.TextureRegion;
 import org.terasology.rendering.nui.Canvas;
 import org.terasology.rendering.nui.Color;
