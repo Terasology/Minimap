@@ -23,6 +23,7 @@ import java.util.List;
 import org.terasology.asset.Assets;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.logic.players.LocalPlayer;
+import org.terasology.math.Border;
 import org.terasology.math.geom.Rect2i;
 import org.terasology.math.geom.Vector2f;
 import org.terasology.math.geom.Vector2i;
@@ -173,13 +174,17 @@ public class MinimapGrid extends CoreWidget {
             Vector2i cellSize = canvas.calculatePreferredSize(cells[0][0]);
 
             canvas.drawBackground();
+            Border border = canvas.getCurrentStyle().getBackgroundBorder();
 
             for (int row = 0; row < numberOfRows; row++) {
                 for (int column = 0; column < numberOfColumns; column++) {
                     MinimapCell cell = cells[row][column];
                     int horizPos = row;
                     int vertPos = column;
-                    canvas.drawWidget(cell, Rect2i.createFromMinAndSize(horizPos * cellSize.x, vertPos * cellSize.y, cellSize.x, cellSize.y));
+                    int x = border.getLeft() + horizPos * cellSize.x;
+                    int y = border.getTop() + vertPos * cellSize.y;
+                    Rect2i rect = Rect2i.createFromMinAndSize(x, y, cellSize.x, cellSize.y);
+                    canvas.drawWidget(cell, rect);
                 }
             }
         }
@@ -190,10 +195,11 @@ public class MinimapGrid extends CoreWidget {
         if (null == cells) {
             initialize();
         }
+        Border border = canvas.getCurrentStyle().getBackgroundBorder();
 
         if (null != cells) {
             Vector2i cellSize = canvas.calculatePreferredSize(cells[0][0]);
-            return new Vector2i(numberOfRows * cellSize.x, numberOfColumns * cellSize.y);
+            return new Vector2i(numberOfRows * cellSize.x + border.getTotalWidth(), numberOfColumns * cellSize.y + border.getTotalHeight());
         }
         return Vector2i.zero();
     }

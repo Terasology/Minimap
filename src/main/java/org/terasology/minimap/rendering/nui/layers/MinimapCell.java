@@ -35,7 +35,7 @@ import org.terasology.world.block.Block;
  */
 public class MinimapCell extends CoreWidget {
 
-    private static final int MINIMAP_TILE_SIZE = 25;
+    private static final int MINIMAP_TILE_SIZE = 10;
     private static final int MINIMAP_TRANSPARENCY = 255;
     private static final Color MINIMAP_TRANSPARENCY_COLOR = Color.WHITE.alterAlpha(MINIMAP_TRANSPARENCY);
 
