@@ -26,7 +26,6 @@ import org.terasology.math.geom.Rect2i;
 import org.terasology.math.geom.Vector2i;
 import org.terasology.math.geom.Vector3i;
 import org.terasology.math.geom.Vector3f;
-import org.terasology.minimap.DisplayAxisType;
 import org.terasology.registry.CoreRegistry;
 import org.terasology.rendering.nui.Canvas;
 import org.terasology.rendering.nui.CoreWidget;
@@ -42,8 +41,6 @@ import com.google.common.collect.Iterators;
  * @author mkienenb
  */
 public class MinimapGrid extends CoreWidget {
-
-    private DisplayAxisType displayAxisType = DisplayAxisType.XZ_AXIS;
 
     private int numberOfColumns = 15;
     private int numberOfRows = 15;
@@ -95,17 +92,17 @@ public class MinimapGrid extends CoreWidget {
                         // Currently the character entity doesn't have a valid LocationComponent, which seems weird.
                         // So skip allowing arbitrary entities for now.
 
-                        //                            EntityRef entity = getTargetEntity();
-                        //                            if (null != entity) {
-                        //                                LocationComponent locationComponent = entity.getComponent(LocationComponent.class);
-                        //                                if (null != locationComponent) {
-                        //                                    worldPosition = locationComponent.getWorldPosition();
-                        //                                } else {
-                        //                                    logger.error("No locationComponent for target entity " + entity);
-                        //                                }
-                        //                            } else {
-                        //                                logger.error("No target entity");
-                        //                            }
+//                            EntityRef entity = getTargetEntity();
+//                            if (null != entity) {
+//                                LocationComponent locationComponent = entity.getComponent(LocationComponent.class);
+//                                if (null != locationComponent) {
+//                                    worldPosition = locationComponent.getWorldPosition();
+//                                } else {
+//                                    logger.error("No locationComponent for target entity " + entity);
+//                                }
+//                            } else {
+//                                logger.error("No target entity");
+//                            }
 
                         if (null == worldPosition) {
                             LocalPlayer localPlayer = CoreRegistry.get(LocalPlayer.class);
@@ -117,24 +114,8 @@ public class MinimapGrid extends CoreWidget {
                         blockPosition.sub(0, 1, 0);
 
                         int offset = getViewingAxisOffset();
-                        switch (displayAxisType) {
-                            case XY_AXIS:
-                                blockPosition.add(0, 0, offset);
-                                break;
-                            case XZ_AXIS:
-                                blockPosition.add(0, offset, 0);
-                                break;
-                            case YZ_AXIS:
-                                blockPosition.add(offset, 0, 0);
-                                break;
-                        }
+                        blockPosition.add(0, 0, offset);
                         return blockPosition;
-                    }
-                });
-                cell.bindDisplayAxisType(new ReadOnlyBinding<DisplayAxisType>() {
-                    @Override
-                    public DisplayAxisType get() {
-                        return displayAxisType;
                     }
                 });
             }
@@ -226,24 +207,6 @@ public class MinimapGrid extends CoreWidget {
 
     public void setCellOffset(int val) {
         cellOffsetBinding.set(val);
-    }
-
-    public void toggleAxis() {
-        switch (displayAxisType) {
-            case XY_AXIS:
-                displayAxisType = DisplayAxisType.XZ_AXIS;
-                break;
-            case XZ_AXIS:
-                displayAxisType = DisplayAxisType.YZ_AXIS;
-                break;
-            case YZ_AXIS:
-                displayAxisType = DisplayAxisType.XY_AXIS;
-                break;
-        }
-    }
-
-    public DisplayAxisType getDisplayAxisType() {
-        return displayAxisType;
     }
 
     public int getViewingAxisOffset() {

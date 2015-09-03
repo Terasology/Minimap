@@ -21,12 +21,12 @@ import org.terasology.asset.Assets;
 import org.terasology.math.geom.Vector2i;
 import org.terasology.math.geom.Vector3i;
 import org.terasology.math.geom.Vector2f;
-import org.terasology.minimap.DisplayAxisType;
 import org.terasology.registry.CoreRegistry;
 import org.terasology.rendering.assets.texture.BasicTextureRegion;
 import org.terasology.rendering.assets.texture.Texture;
 import org.terasology.rendering.assets.texture.TextureRegion;
 import org.terasology.rendering.nui.Canvas;
+import org.terasology.rendering.nui.Color;
 import org.terasology.rendering.nui.CoreWidget;
 import org.terasology.rendering.nui.databinding.Binding;
 import org.terasology.rendering.nui.databinding.DefaultBinding;
@@ -43,21 +43,24 @@ public class MinimapCell extends CoreWidget {
 
     private static final Logger logger = LoggerFactory.getLogger(MinimapCell.class);
 
+    private static final int MINIMAP_TILE_SIZE = 25;
+    private static final float MINIMAP_TRANSPARENCY = 0.5f;
+    private static final Color MINIMAP_TRANSPARENCY_COLOR = Color.WHITE.alterAlpha((int) (MINIMAP_TRANSPARENCY * 256));
+
     private final Texture textureAtlas;
     private final TextureRegion questionMarkTextureRegion;
 
-    private MapLocationIcon mapLocationIcon = new MapLocationIcon();
-
     private Vector2i relativeCellLocation;
     private Binding<Vector3i> centerLocationBinding = new DefaultBinding<>(null);
-    private Binding<DisplayAxisType> displayAxisTypeBinding = new DefaultBinding<>(null);
+
+    private ReadOnlyBinding<TextureRegion> icon;
 
     public MinimapCell() {
 
         textureAtlas = Assets.getTexture("engine:terrain").get();
         questionMarkTextureRegion = Assets.getTextureRegion("engine:items#questionMark").get();
 
-        mapLocationIcon.bindIcon(new ReadOnlyBinding<TextureRegion>() {
+        icon = new ReadOnlyBinding<TextureRegion>() {
             @Override
             public TextureRegion get() {
                 Vector3i centerLocation = getCenterLocation();
@@ -67,40 +70,14 @@ public class MinimapCell extends CoreWidget {
 
                 WorldProvider worldProvider = CoreRegistry.get(WorldProvider.class);
 
-                DisplayAxisType displayAxis = getDisplayAxisType();
-                Vector3i relativeLocation;
-                switch (displayAxis) {
-                    case XZ_AXIS: // top down view
-                        relativeLocation = new Vector3i(-relativeCellLocation.x, 0, relativeCellLocation.y);
-                        break;
-                    case XY_AXIS:
-                        relativeLocation = new Vector3i(-relativeCellLocation.y, -relativeCellLocation.x, 0);
-                        break;
-                    case YZ_AXIS:
-                        relativeLocation = new Vector3i(0, -relativeCellLocation.x, -relativeCellLocation.y);
-                        break;
-                    default:
-                        throw new RuntimeException("displayAxisType containts invalid value");
-                }
+                // top down view
+                Vector3i relativeLocation = new Vector3i(-relativeCellLocation.x, 0, relativeCellLocation.y);
                 relativeLocation.add(centerLocation);
                 Block block = worldProvider.getBlock(relativeLocation);
                 if (null != block) {
                     BlockAppearance primaryAppearance = block.getPrimaryAppearance();
 
-                    BlockPart blockPart;
-                    switch (displayAxis) {
-                        case XZ_AXIS: // top down view
-                            blockPart = BlockPart.TOP;
-                            break;
-                        case XY_AXIS:
-                            blockPart = BlockPart.FRONT; // todo: front/left/right/back needs to be picked base on viewpoint
-                            break;
-                        case YZ_AXIS:
-                            blockPart = BlockPart.LEFT; // todo: front/left/right/back needs to be picked base on viewpoint
-                            break;
-                        default:
-                            throw new RuntimeException("displayAxisType containts invalid value");
-                    }
+                    BlockPart blockPart = BlockPart.TOP;
 
                     // TODO: security issues
                     //                    WorldAtlas worldAtlas = CoreRegistry.get(WorldAtlas.class);
@@ -117,17 +94,17 @@ public class MinimapCell extends CoreWidget {
                 logger.info("No block found for location " + relativeLocation);
                 return questionMarkTextureRegion;
             }
-        });
+        };
     }
 
     @Override
     public void onDraw(Canvas canvas) {
-        canvas.drawWidget(mapLocationIcon);
+        canvas.drawTexture(icon.get(), MINIMAP_TRANSPARENCY_COLOR);
     }
 
     @Override
     public Vector2i getPreferredContentSize(Canvas canvas, Vector2i sizeHint) {
-        return canvas.calculateRestrictedSize(mapLocationIcon, sizeHint);
+        return new Vector2i(MINIMAP_TILE_SIZE, MINIMAP_TILE_SIZE);
     }
 
     public Vector2i getCellRelativeLocation() {
@@ -148,17 +125,5 @@ public class MinimapCell extends CoreWidget {
 
     public void setCenterLocation(Vector3i location) {
         centerLocationBinding.set(location);
-    }
-
-    public void bindDisplayAxisType(Binding<DisplayAxisType> binding) {
-        displayAxisTypeBinding = binding;
-    }
-
-    public DisplayAxisType getDisplayAxisType() {
-        return displayAxisTypeBinding.get();
-    }
-
-    public void setDisplayAxisType(DisplayAxisType displayAxis) {
-        displayAxisTypeBinding.set(displayAxis);
     }
 }

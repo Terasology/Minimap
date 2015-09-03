@@ -22,7 +22,6 @@ import org.terasology.entitySystem.systems.ComponentSystem;
 import org.terasology.entitySystem.systems.RegisterSystem;
 import org.terasology.input.binds.minimap.DecreaseOffsetButton;
 import org.terasology.input.binds.minimap.IncreaseOffsetButton;
-import org.terasology.input.binds.minimap.ToggleMinimapAxisButton;
 import org.terasology.input.binds.minimap.ToggleMinimapButton;
 import org.terasology.logic.characters.CharacterComponent;
 import org.terasology.minimap.rendering.nui.layers.MinimapHUDElement;
@@ -98,42 +97,27 @@ public class MinimapSystem implements ComponentSystem {
         }
     }
 
-    @ReceiveEvent(components = {CharacterComponent.class})
-    public void onToggleMinimapAxisButton(ToggleMinimapAxisButton event, EntityRef entity) {
-        if (event.isDown()) {
-            //            ControlWidget element = nuiManager.getHUD().findHUDElementWidget(HUD_ELEMENT_MAP_ID);
-            //            if (null != element) {
-            //                MinimapHUDElement minimapHUDElement = (MinimapHUDElement) element;
-            {
-                // TODO: get rid of return value assignment when findHUDElementWidget is in engine
-                minimapHUDElement.onBindEvent(event);
-            }
-
-            event.consume();
-        }
-    }
-
     @Override
     public void preBegin() {
         // TODO Auto-generated method stub
-        
+
     }
 
     @Override
     public void postBegin() {
         // TODO Auto-generated method stub
-        
+
     }
 
     @Override
     public void preSave() {
         // TODO Auto-generated method stub
-        
+
     }
 
     @Override
     public void postSave() {
         // TODO Auto-generated method stub
-        
+
     }
 }

@@ -7,11 +7,6 @@
             {
                 "type" : "ColumnLayout",
                 "contents" : [
-        			{
-        				"type" : "UILabel",
-        				"id" : "orientationLabel",
-        				"text" : "x-z orientation"
-        			},
                     {
                         "type" : "MinimapGrid",
                         "id" : "minimapGrid",
