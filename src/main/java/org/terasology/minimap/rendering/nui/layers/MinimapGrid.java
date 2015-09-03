@@ -20,21 +20,33 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import org.terasology.asset.Assets;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.logic.players.LocalPlayer;
 import org.terasology.math.geom.Rect2i;
+import org.terasology.math.geom.Vector2f;
 import org.terasology.math.geom.Vector2i;
 import org.terasology.math.geom.Vector3i;
 import org.terasology.math.geom.Vector3f;
 import org.terasology.registry.CoreRegistry;
+import org.terasology.rendering.assets.texture.BasicTextureRegion;
+import org.terasology.rendering.assets.texture.Texture;
+import org.terasology.rendering.assets.texture.TextureRegion;
 import org.terasology.rendering.nui.Canvas;
 import org.terasology.rendering.nui.CoreWidget;
 import org.terasology.rendering.nui.UIWidget;
 import org.terasology.rendering.nui.databinding.Binding;
 import org.terasology.rendering.nui.databinding.DefaultBinding;
 import org.terasology.rendering.nui.databinding.ReadOnlyBinding;
+import org.terasology.world.WorldProvider;
+import org.terasology.world.block.Block;
+import org.terasology.world.block.BlockAppearance;
+import org.terasology.world.block.BlockPart;
 
 import com.google.common.base.Function;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Iterators;
 
 /**
@@ -51,8 +63,33 @@ public class MinimapGrid extends CoreWidget {
     private Binding<Integer> cellOffsetBinding = new DefaultBinding<>(0);
     private Binding<Integer> viewingAxisOffsetBinding = new DefaultBinding<>(0);
 
+    private Texture textureAtlas;
+
+    private LoadingCache<Block, TextureRegion> cache = CacheBuilder.newBuilder().build(new CacheLoader<Block, TextureRegion>() {
+
+        @Override
+        public TextureRegion load(Block block) {
+            BlockAppearance primaryAppearance = block.getPrimaryAppearance();
+
+            BlockPart blockPart = BlockPart.TOP;
+
+            // TODO: security issues
+            //                    WorldAtlas worldAtlas = CoreRegistry.get(WorldAtlas.class);
+            //                    float tileSize = worldAtlas.getRelativeTileSize();
+
+            float tileSize = 16f / 256f; // 256f could be replaced by textureAtlas.getWidth();
+
+            Vector2f textureAtlasPos = primaryAppearance.getTextureAtlasPos(blockPart);
+
+            TextureRegion textureRegion = new BasicTextureRegion(textureAtlas, textureAtlasPos, new Vector2f(tileSize, tileSize));
+            return textureRegion;
+        }
+
+    });
+
     public MinimapGrid() {
     }
+
 
     public MinimapGrid(int numberOfColumns, int numberOfRows) {
         this.numberOfColumns = numberOfColumns;
@@ -69,15 +106,19 @@ public class MinimapGrid extends CoreWidget {
 
     private void initialize() {
 
+        textureAtlas = Assets.getTexture("engine:terrain").get();
+
         int rowCenter = (int) ((numberOfRows + 0.5f) / 2f);
         int columnCenter = (int) ((numberOfColumns + 0.5f) / 2f);
+
+        WorldProvider worldProvider = CoreRegistry.get(WorldProvider.class);
 
         cells = new MinimapCell[numberOfRows][numberOfColumns];
         for (int row = 0; row < numberOfRows; row++) {
             cells[row] = new MinimapCell[numberOfColumns];
 
             for (int column = 0; column < numberOfColumns; column++) {
-                MinimapCell cell = new MinimapCell();
+                MinimapCell cell = new MinimapCell(worldProvider, cache::getUnchecked);
                 cells[row][column] = cell;
 
                 cell.setRelativeCellLocation(new Vector2i((column - columnCenter), (row - rowCenter)));

@@ -15,91 +15,65 @@
  */
 package org.terasology.minimap.rendering.nui.layers;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.function.Function;
+
 import org.terasology.asset.Assets;
+import org.terasology.math.TeraMath;
 import org.terasology.math.geom.Vector2i;
 import org.terasology.math.geom.Vector3i;
-import org.terasology.math.geom.Vector2f;
-import org.terasology.registry.CoreRegistry;
-import org.terasology.rendering.assets.texture.BasicTextureRegion;
-import org.terasology.rendering.assets.texture.Texture;
 import org.terasology.rendering.assets.texture.TextureRegion;
 import org.terasology.rendering.nui.Canvas;
 import org.terasology.rendering.nui.Color;
 import org.terasology.rendering.nui.CoreWidget;
 import org.terasology.rendering.nui.databinding.Binding;
 import org.terasology.rendering.nui.databinding.DefaultBinding;
-import org.terasology.rendering.nui.databinding.ReadOnlyBinding;
 import org.terasology.world.WorldProvider;
 import org.terasology.world.block.Block;
-import org.terasology.world.block.BlockAppearance;
-import org.terasology.world.block.BlockPart;
 
 /**
  * @author Immortius
  */
 public class MinimapCell extends CoreWidget {
 
-    private static final Logger logger = LoggerFactory.getLogger(MinimapCell.class);
-
     private static final int MINIMAP_TILE_SIZE = 25;
-    private static final float MINIMAP_TRANSPARENCY = 0.5f;
-    private static final Color MINIMAP_TRANSPARENCY_COLOR = Color.WHITE.alterAlpha((int) (MINIMAP_TRANSPARENCY * 256));
+    private static final int MINIMAP_TRANSPARENCY = 255;
+    private static final Color MINIMAP_TRANSPARENCY_COLOR = Color.WHITE.alterAlpha(MINIMAP_TRANSPARENCY);
 
-    private final Texture textureAtlas;
-    private final TextureRegion questionMarkTextureRegion;
+    private final TextureRegion questionMark;
 
     private Vector2i relativeCellLocation;
     private Binding<Vector3i> centerLocationBinding = new DefaultBinding<>(null);
 
-    private ReadOnlyBinding<TextureRegion> icon;
+    private Function<Block, TextureRegion> textureMap;
 
-    public MinimapCell() {
+    private WorldProvider worldProvider;
 
-        textureAtlas = Assets.getTexture("engine:terrain").get();
-        questionMarkTextureRegion = Assets.getTextureRegion("engine:items#questionMark").get();
+    public MinimapCell(WorldProvider worldProvider, Function<Block, TextureRegion> textureMap) {
 
-        icon = new ReadOnlyBinding<TextureRegion>() {
-            @Override
-            public TextureRegion get() {
-                Vector3i centerLocation = getCenterLocation();
-                if (null == centerLocation) {
-                    return null;
-                }
-
-                WorldProvider worldProvider = CoreRegistry.get(WorldProvider.class);
-
-                // top down view
-                Vector3i relativeLocation = new Vector3i(-relativeCellLocation.x, 0, relativeCellLocation.y);
-                relativeLocation.add(centerLocation);
-                Block block = worldProvider.getBlock(relativeLocation);
-                if (null != block) {
-                    BlockAppearance primaryAppearance = block.getPrimaryAppearance();
-
-                    BlockPart blockPart = BlockPart.TOP;
-
-                    // TODO: security issues
-                    //                    WorldAtlas worldAtlas = CoreRegistry.get(WorldAtlas.class);
-                    //                    float tileSize = worldAtlas.getRelativeTileSize();
-
-                    float tileSize = 16f / 256f; // 256f could be replaced by textureAtlas.getWidth();
-
-                    Vector2f textureAtlasPos = primaryAppearance.getTextureAtlasPos(blockPart);
-
-                    TextureRegion textureRegion = new BasicTextureRegion(textureAtlas, textureAtlasPos, new Vector2f(tileSize, tileSize));
-                    return textureRegion;
-                }
-
-                logger.info("No block found for location " + relativeLocation);
-                return questionMarkTextureRegion;
-            }
-        };
+        this.textureMap = textureMap;
+        this.questionMark = Assets.getTextureRegion("engine:items#questionMark").get();
+        this.worldProvider = worldProvider;
     }
 
     @Override
     public void onDraw(Canvas canvas) {
-        canvas.drawTexture(icon.get(), MINIMAP_TRANSPARENCY_COLOR);
+        Vector3i centerLocation = getCenterLocation();
+        Vector3i relativeLocation = new Vector3i(-relativeCellLocation.x, 0, relativeCellLocation.y);
+        Entry<Vector3i, Block> result = findSurface(relativeLocation.add(centerLocation));
+
+        TextureRegion reg;
+        Color color;
+        if (result == null) {
+            color = MINIMAP_TRANSPARENCY_COLOR;
+            reg = questionMark;
+        } else {
+            reg = textureMap.apply(result.value);
+            int dist = result.key.getY() - relativeLocation.getY();
+            int g = 128 + TeraMath.clamp(dist * 10, -128, 127);
+            color = new Color(g, g, g, MINIMAP_TRANSPARENCY);
+        }
+
+        canvas.drawTexture(reg, color);
     }
 
     @Override
@@ -125,5 +99,50 @@ public class MinimapCell extends CoreWidget {
 
     public void setCenterLocation(Vector3i location) {
         centerLocationBinding.set(location);
+    }
+
+
+    private Entry<Vector3i, Block> findSurface(Vector3i startPos) {
+
+        Vector3i pos = new Vector3i(startPos);
+
+        Block block = worldProvider.getBlock(pos);
+        if (isIgnored(block)) {
+            do {
+                pos.subY(1);
+                if (!worldProvider.isBlockRelevant(pos)) {
+                    return null;
+                }
+                block = worldProvider.getBlock(pos);
+            } while (isIgnored(block));
+        } else {
+            Block next = block;
+            do {
+                pos.addY(1);
+                if (!worldProvider.isBlockRelevant(pos)) {
+                    return null;
+                }
+                block = next;
+                next = worldProvider.getBlock(pos);
+            } while (!isIgnored(next));
+        }
+
+        return new Entry<Vector3i, Block>(pos, block);
+    }
+
+    private static boolean isIgnored(Block block) {
+        return block.isPenetrable() && !block.isWater();
+    }
+
+    private static class Entry<K, V> {
+
+        private K key;
+        private V value;
+
+        public Entry(K key, V value) {
+            this.key = key;
+            this.value = value;
+        }
+
     }
 }
