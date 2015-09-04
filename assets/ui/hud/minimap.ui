@@ -10,9 +10,7 @@
                     {
                         "type" : "MinimapGrid",
                         "id" : "minimapGrid",
-                        "skin": "framed",
-                        "numberOfColumns" : 15,
-                        "numberOfRows" : 15
+                        "skin": "framed"
                     },
                     {
                         "type" : "UISlider",

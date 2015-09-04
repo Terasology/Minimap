@@ -19,30 +19,22 @@ import java.util.function.Function;
 
 import org.terasology.asset.Assets;
 import org.terasology.math.TeraMath;
-import org.terasology.math.geom.Vector2i;
 import org.terasology.math.geom.Vector3i;
 import org.terasology.rendering.assets.texture.TextureRegion;
 import org.terasology.rendering.nui.Canvas;
 import org.terasology.rendering.nui.Color;
-import org.terasology.rendering.nui.CoreWidget;
-import org.terasology.rendering.nui.databinding.Binding;
-import org.terasology.rendering.nui.databinding.DefaultBinding;
 import org.terasology.world.WorldProvider;
 import org.terasology.world.block.Block;
 
 /**
  * @author Immortius
  */
-public class MinimapCell extends CoreWidget {
+public class MinimapCell {
 
-    private static final int MINIMAP_TILE_SIZE = 10;
     private static final int MINIMAP_TRANSPARENCY = 255;
     private static final Color MINIMAP_TRANSPARENCY_COLOR = Color.WHITE.alterAlpha(MINIMAP_TRANSPARENCY);
 
     private final TextureRegion questionMark;
-
-    private Vector2i relativeCellLocation;
-    private Binding<Vector3i> centerLocationBinding = new DefaultBinding<>(null);
 
     private Function<Block, TextureRegion> textureMap;
 
@@ -55,11 +47,9 @@ public class MinimapCell extends CoreWidget {
         this.worldProvider = worldProvider;
     }
 
-    @Override
-    public void onDraw(Canvas canvas) {
-        Vector3i centerLocation = getCenterLocation();
-        Vector3i relativeLocation = new Vector3i(-relativeCellLocation.x, 0, relativeCellLocation.y);
-        Entry<Vector3i, Block> result = findSurface(relativeLocation.add(centerLocation));
+    public void draw(Canvas canvas, Vector3i startLocation) {
+        Vector3i relativeLocation = new Vector3i(startLocation);
+        Entry<Vector3i, Block> result = findSurface(relativeLocation);
 
         TextureRegion reg;
         Color color;
@@ -75,32 +65,6 @@ public class MinimapCell extends CoreWidget {
 
         canvas.drawTexture(reg, color);
     }
-
-    @Override
-    public Vector2i getPreferredContentSize(Canvas canvas, Vector2i sizeHint) {
-        return new Vector2i(MINIMAP_TILE_SIZE, MINIMAP_TILE_SIZE);
-    }
-
-    public Vector2i getCellRelativeLocation() {
-        return relativeCellLocation;
-    }
-
-    public void setRelativeCellLocation(Vector2i relativeLocation) {
-        this.relativeCellLocation = relativeLocation;
-    }
-
-    public void bindCenterLocation(Binding<Vector3i> binding) {
-        centerLocationBinding = binding;
-    }
-
-    public Vector3i getCenterLocation() {
-        return centerLocationBinding.get();
-    }
-
-    public void setCenterLocation(Vector3i location) {
-        centerLocationBinding.set(location);
-    }
-
 
     private Entry<Vector3i, Block> findSurface(Vector3i startPos) {
 
