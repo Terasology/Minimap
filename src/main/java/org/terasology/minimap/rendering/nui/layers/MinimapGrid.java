@@ -21,16 +21,21 @@ import java.util.Optional;
 import org.terasology.asset.Assets;
 import org.terasology.assets.ResourceUrn;
 import org.terasology.entitySystem.entity.EntityRef;
+import org.terasology.logic.characters.CharacterComponent;
+import org.terasology.logic.location.LocationComponent;
 import org.terasology.logic.players.LocalPlayer;
 import org.terasology.math.Border;
 import org.terasology.math.ChunkMath;
 import org.terasology.math.TeraMath;
+import org.terasology.math.geom.Quat4f;
 import org.terasology.math.geom.Rect2i;
 import org.terasology.math.geom.Vector2f;
 import org.terasology.math.geom.Vector2i;
 import org.terasology.math.geom.Vector3i;
 import org.terasology.math.geom.Vector3f;
 import org.terasology.registry.CoreRegistry;
+import org.terasology.rendering.assets.material.Material;
+import org.terasology.rendering.assets.mesh.Mesh;
 import org.terasology.rendering.assets.texture.BasicTextureRegion;
 import org.terasology.rendering.assets.texture.Texture;
 import org.terasology.rendering.assets.texture.TextureRegion;
@@ -106,25 +111,15 @@ public class MinimapGrid extends CoreWidget {
 
         Vector3f worldPosition = null;
 
-        // TODO: Figure out how to fix this
-        // Currently the character entity doesn't have a valid LocationComponent, which seems weird.
-        // So skip allowing arbitrary entities for now.
-
-//                    EntityRef entity = getTargetEntity();
-//                    if (null != entity) {
-//                        LocationComponent locationComponent = entity.getComponent(LocationComponent.class);
-//                        if (null != locationComponent) {
-//                            worldPosition = locationComponent.getWorldPosition();
-//                        } else {
-//                            logger.error("No locationComponent for target entity " + entity);
-//                        }
-//                    } else {
-//                        logger.error("No target entity");
-//                    }
-
-        if (null == worldPosition) {
-            LocalPlayer localPlayer = CoreRegistry.get(LocalPlayer.class);
-            worldPosition = localPlayer.getPosition();
+        LocalPlayer localPlayer = CoreRegistry.get(LocalPlayer.class);
+        EntityRef entity = localPlayer.getCharacterEntity();
+        LocationComponent locationComponent = entity.getComponent(LocationComponent.class);
+        CharacterComponent character = localPlayer.getCharacterEntity().getComponent(CharacterComponent.class);
+        float rotation = (float) ((character != null) ? -character.yaw * Math.PI / 180f : 0);
+        if (null != locationComponent) {
+            worldPosition = locationComponent.getWorldPosition();
+        } else {
+            return;
         }
 
         Vector3i centerPosition = new Vector3i(worldPosition);
@@ -192,11 +187,22 @@ public class MinimapGrid extends CoreWidget {
 
         // draw arrowhead
         Texture arrowhead = Assets.getTexture("Minimap:arrowhead").get();
-        int arrowWidth = arrowhead.getWidth();
-        int arrowHeight = arrowhead.getHeight();
+        // Drawing textures with rotation is not yet supported, see #1926
+        // We therefore use a workaround based on mesh drawing
+        // The width of the screenArea is doubled to avoid clipping issues when the texture is rotated
+        int arrowWidth = arrowhead.getWidth() * 2;
+        int arrowHeight = arrowhead.getHeight() * 2;
         int arrowX = (width - arrowWidth) / 2;
         int arrowY = (height - arrowHeight) / 2;
-        canvas.drawTexture(arrowhead, Rect2i.createFromMinAndSize(arrowX, arrowY, arrowWidth, arrowHeight));
+        Rect2i screenArea = Rect2i.createFromMinAndSize(arrowX, arrowY, arrowWidth, arrowHeight);
+//        canvas.drawTexture(arrowhead, arrowX, arrowY, rotation);
+
+        // UITexture should be used here, but it doesn't work
+        Material material = Assets.getMaterial("engine:UILitMesh").get();
+        material.setTexture("texture", arrowhead);
+        Mesh mesh = Assets.getMesh("engine:UIBillboard").get();
+        // The scaling seems to be completely wrong - 0.8f looks ok
+        canvas.drawMesh(mesh, material, screenArea, new Quat4f(0, 0, rotation), new Vector3f(), 0.8f);
     }
 
     @Override
