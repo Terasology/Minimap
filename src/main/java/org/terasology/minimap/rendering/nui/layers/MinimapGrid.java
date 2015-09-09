@@ -61,7 +61,7 @@ import com.google.common.cache.LoadingCache;
  */
 public class MinimapGrid extends CoreWidget {
 
-    private static final Vector2i CELL_SIZE = new Vector2i(8, 8);
+    private static final Vector2i CELL_SIZE = new Vector2i(4, 4);
 
     private MinimapCell cell;
 
@@ -122,37 +122,41 @@ public class MinimapGrid extends CoreWidget {
             return;
         }
 
-        Vector3i centerPosition = new Vector3i(worldPosition);
+        Vector3f centerPosition = new Vector3f(worldPosition);
         // From top view, see what we're walking on, not what's at knee level
         centerPosition.sub(0, 1, 0);
 
         // define zoom factor
         int zoomLevel = getViewingAxisOffset();
         float zoomDelta = 0.25f;
-        float zoom = 1; //(float) Math.pow(2.0, zoomLevel * zoomDelta);
+        float zoom = (float) Math.pow(2.0, zoomLevel * zoomDelta);
         int width = getPreferredContentSize().getX();
         int height = getPreferredContentSize().getY();
-        int numberOfRows = TeraMath.ceilToInt(height / (zoom * CELL_SIZE.getY()));
-        int numberOfCols = TeraMath.ceilToInt(width / (zoom * CELL_SIZE.getX()));
+        float numberOfRows = height / (zoom * CELL_SIZE.getY());
+        float numberOfCols = width / (zoom * CELL_SIZE.getX());
 
-        int rowCenter = (int) ((numberOfRows + 0.5f) / 2f);
-        int columnCenter = (int) ((numberOfCols + 0.5f) / 2f);
+        int rowCenter = TeraMath.ceilToInt(numberOfRows * 0.5f);
+        int colCenter = TeraMath.ceilToInt(numberOfCols * 0.5f);
 
-        int centerX = centerPosition.getX();
-        int centerZ = centerPosition.getZ();
-        Vector3i minChunkPos = ChunkMath.calcChunkPos(centerX - columnCenter, 0, centerZ - rowCenter);
-        Vector3i maxChunkPos = ChunkMath.calcChunkPos(centerX + columnCenter, 0, centerZ + rowCenter);
+        int centerX = TeraMath.floorToInt(centerPosition.getX());
+        int centerZ = TeraMath.floorToInt(centerPosition.getZ());
+        Vector3i minChunkPos = ChunkMath.calcChunkPos(centerX - colCenter, 0, centerZ - rowCenter);
+        Vector3i maxChunkPos = ChunkMath.calcChunkPos(centerX + colCenter, 0, centerZ + rowCenter);
+
+        int bufferWidth = CELL_SIZE.getX() * ChunkConstants.SIZE_X;
+        int bufferHeight = CELL_SIZE.getY() * ChunkConstants.SIZE_Z;
+
+        int screenWidth = TeraMath.ceilToInt(bufferWidth * zoom);
+        int screenHeight = TeraMath.ceilToInt(bufferHeight * zoom);
 
         for (int chunkZ = minChunkPos.getZ(); chunkZ <= maxChunkPos.getZ(); chunkZ++) {
             for (int chunkX = minChunkPos.getX(); chunkX <= maxChunkPos.getX(); chunkX++) {
 
                 ResourceUrn urn = new ResourceUrn("Minimap:gridcache" + chunkX + "x" + chunkZ);
                 Optional<Texture> opt = Assets.get(urn, Texture.class);
-                int bufferWidth = CELL_SIZE.getX() * ChunkConstants.SIZE_X;
-                int bufferHeight = CELL_SIZE.getY() * ChunkConstants.SIZE_Z;
-                Vector2i size = new Vector2i(bufferWidth, bufferHeight);
+                Vector2i bufferSize = new Vector2i(bufferWidth, bufferHeight);
                 if (!opt.isPresent()) {
-                    try (SubRegion ignored = canvas.subRegionFBO(urn, size)) {
+                    try (SubRegion ignored = canvas.subRegionFBO(urn, bufferSize)) {
                         for (int row = 0; row < ChunkConstants.SIZE_Z; row++) {
                             for (int column = 0; column < ChunkConstants.SIZE_X; column++) {
                                 int x = column * CELL_SIZE.x;
@@ -174,13 +178,13 @@ public class MinimapGrid extends CoreWidget {
                 }
 
                 try (SubRegion ignored = canvas.subRegion(canvas.getRegion(), true)) {
-                    int offX = centerX - columnCenter - chunkX * ChunkConstants.SIZE_X;
-                    int offZ = centerZ - rowCenter - chunkZ * ChunkConstants.SIZE_Z;
-                    offX *= CELL_SIZE.x;
-                    offZ *= CELL_SIZE.y;
+                    float tileX = centerPosition.getX() - numberOfCols * 0.5f - chunkX * ChunkConstants.SIZE_X;
+                    float tileZ = centerPosition.getZ() - numberOfRows * 0.5f - chunkZ * ChunkConstants.SIZE_Z;
+                    int offX = TeraMath.floorToInt(tileX * CELL_SIZE.x * zoom);
+                    int offZ = TeraMath.floorToInt(tileZ * CELL_SIZE.y * zoom);
 
-                    Rect2i screenRegion = Rect2i.createFromMinAndSize(-offX, -offZ, size.getX(), size.getY());
-                    canvas.drawTextureRaw(opt.get(), screenRegion, ScaleMode.SCALE_FIT, 0, 1f, 1f, -1f);
+                    Rect2i screenRegion = Rect2i.createFromMinAndSize(-offX, -offZ, screenWidth, screenHeight);
+                    canvas.drawTextureRaw(opt.get(), screenRegion, ScaleMode.STRETCH, 0, 1f, 1f, -1f);
                 }
             }
         }
