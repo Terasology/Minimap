@@ -31,9 +31,6 @@ import org.terasology.world.block.Block;
  */
 public class MinimapCell {
 
-    private static final int MINIMAP_TRANSPARENCY = 255;
-    private static final Color MINIMAP_TRANSPARENCY_COLOR = Color.WHITE.alterAlpha(MINIMAP_TRANSPARENCY);
-
     private final TextureRegion questionMark;
 
     private Function<Block, TextureRegion> textureMap;
@@ -48,65 +45,46 @@ public class MinimapCell {
     }
 
     public void draw(Canvas canvas, Vector3i startLocation) {
-        Vector3i relativeLocation = new Vector3i(startLocation);
-        Entry<Vector3i, Block> result = findSurface(relativeLocation);
-
-        TextureRegion reg;
-        Color color;
-        if (result == null) {
-            color = MINIMAP_TRANSPARENCY_COLOR;
-            reg = questionMark;
-        } else {
-            reg = textureMap.apply(result.value);
-            int dist = result.key.getY() - relativeLocation.getY();
-            int g = 128 + TeraMath.clamp(dist * 10, -128, 127);
-            color = new Color(g, g, g, MINIMAP_TRANSPARENCY);
-        }
-
-        canvas.drawTexture(reg, color);
-    }
-
-    private Entry<Vector3i, Block> findSurface(Vector3i startPos) {
-
-        Vector3i pos = new Vector3i(startPos);
+        Vector3i pos = new Vector3i(startLocation);
 
         Block block = worldProvider.getBlock(pos);
+        Block top = block;
         if (isIgnored(block)) {
             do {
                 pos.subY(1);
                 if (!worldProvider.isBlockRelevant(pos)) {
-                    return null;
+                    canvas.drawTexture(questionMark);
+                    return;
                 }
+                top = block;
                 block = worldProvider.getBlock(pos);
             } while (isIgnored(block));
         } else {
-            Block next = block;
             do {
                 pos.addY(1);
                 if (!worldProvider.isBlockRelevant(pos)) {
-                    return null;
+                    canvas.drawTexture(questionMark);
+                    return;
                 }
-                block = next;
-                next = worldProvider.getBlock(pos);
-            } while (!isIgnored(next));
+                block = top;
+                top = worldProvider.getBlock(pos);
+            } while (!isIgnored(top));
         }
 
-        return new Entry<Vector3i, Block>(pos, block);
+        int dist = pos.getY() - startLocation.getY();
+        int g = 128 + TeraMath.clamp(dist * 10, -128, 127);
+        Color color = new Color(g, g, g);
+
+        TextureRegion reg = textureMap.apply(block);
+        canvas.drawTexture(reg, color);
+
+        if (!top.isInvisible()) {
+            reg = textureMap.apply(top);
+            canvas.drawTexture(reg, color);
+        }
     }
 
     private static boolean isIgnored(Block block) {
         return block.isPenetrable() && !block.isWater();
-    }
-
-    private static class Entry<K, V> {
-
-        private K key;
-        private V value;
-
-        public Entry(K key, V value) {
-            this.key = key;
-            this.value = value;
-        }
-
     }
 }
