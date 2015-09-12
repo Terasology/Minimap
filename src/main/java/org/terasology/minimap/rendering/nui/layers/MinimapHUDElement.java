@@ -15,14 +15,13 @@
  */
 package org.terasology.minimap.rendering.nui.layers;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.math.TeraMath;
 import org.terasology.math.geom.Vector3i;
 import org.terasology.rendering.nui.databinding.ReadOnlyBinding;
 import org.terasology.rendering.nui.layers.hud.CoreHudWidget;
 import org.terasology.rendering.nui.widgets.UISlider;
+import org.terasology.world.WorldProvider;
 
 /**
  * @author mkienenb
@@ -31,8 +30,6 @@ public class MinimapHUDElement extends CoreHudWidget {
 
     private static final String MINIMAP_GRID_WIDGET_ID = "minimapGrid";
     private static final String MINIMAP_OFFSET_SLIDER_WIDGET_ID = "minimapOffsetSlider";
-
-    private static final Logger logger = LoggerFactory.getLogger(MinimapHUDElement.class);
 
     private UISlider minimapZoomSlider;
     private MinimapGrid minimapGrid;
@@ -66,7 +63,7 @@ public class MinimapHUDElement extends CoreHudWidget {
     }
 
     public void updateLocation(Vector3i worldLocation) {
-        logger.info("Updating location {}", worldLocation);
+        minimapGrid.updateLocation(worldLocation);
     }
 
     public EntityRef getTargetEntity() {
@@ -80,5 +77,13 @@ public class MinimapHUDElement extends CoreHudWidget {
     public void bindTargetEntity(ReadOnlyBinding<EntityRef> binding) {
         minimapGrid.bindTargetEntity(binding);
 
+    }
+
+    public void setHeightRange(int bottom, int top) {
+        minimapGrid.setHeightRange(bottom, top);
+    }
+
+    public void setWorldProvider(WorldProvider worldProvider) {
+        minimapGrid.setWorldProvider(worldProvider);
     }
 }

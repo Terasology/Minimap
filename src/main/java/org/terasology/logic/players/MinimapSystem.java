@@ -33,7 +33,9 @@ import org.terasology.registry.In;
 //import org.terasology.rendering.nui.ControlWidget;
 import org.terasology.rendering.nui.NUIManager;
 import org.terasology.rendering.nui.databinding.ReadOnlyBinding;
+import org.terasology.world.WorldProvider;
 import org.terasology.world.block.entity.placement.PlaceBlocks;
+import org.terasology.world.generator.WorldGenerator;
 
 /**
  * @author mkienenb
@@ -51,6 +53,12 @@ public class MinimapSystem extends BaseComponentSystem {
     @In
     private LocalPlayer localPlayer;
 
+    @In
+    private WorldProvider worldProvider;
+
+    @In
+    private WorldGenerator worldGenerator;
+
     @Override
     public void initialise() {
         Rect2f rc = Rect2f.createFromMinAndSize(0.05f, 0.1f, 1, 1);
@@ -62,10 +70,9 @@ public class MinimapSystem extends BaseComponentSystem {
                 return localPlayer.getCharacterEntity();
             }
         });
-    }
-
-    @Override
-    public void shutdown() {
+        int seaLevel = worldGenerator.getWorld().getSeaLevel();
+        minimapHUDElement.setHeightRange(seaLevel, seaLevel + 64);
+        minimapHUDElement.setWorldProvider(worldProvider);
     }
 
     @ReceiveEvent(components = {CharacterComponent.class})

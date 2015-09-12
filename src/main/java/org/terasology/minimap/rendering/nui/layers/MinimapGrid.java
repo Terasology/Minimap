@@ -17,7 +17,9 @@ package org.terasology.minimap.rendering.nui.layers;
 
 
 import java.util.Optional;
+import java.util.function.IntFunction;
 
+import org.lwjgl.opengl.GL11;
 import org.terasology.asset.Assets;
 import org.terasology.assets.ResourceUrn;
 import org.terasology.entitySystem.entity.EntityRef;
@@ -25,20 +27,23 @@ import org.terasology.logic.characters.CharacterComponent;
 import org.terasology.logic.location.LocationComponent;
 import org.terasology.math.Border;
 import org.terasology.math.ChunkMath;
+import org.terasology.math.Region3i;
 import org.terasology.math.TeraMath;
+import org.terasology.math.geom.BaseVector2i;
+import org.terasology.math.geom.ImmutableVector2i;
 import org.terasology.math.geom.Quat4f;
 import org.terasology.math.geom.Rect2i;
 import org.terasology.math.geom.Vector2f;
 import org.terasology.math.geom.Vector2i;
-import org.terasology.math.geom.Vector3i;
 import org.terasology.math.geom.Vector3f;
-import org.terasology.registry.CoreRegistry;
+import org.terasology.math.geom.Vector3i;
 import org.terasology.rendering.assets.material.Material;
 import org.terasology.rendering.assets.mesh.Mesh;
 import org.terasology.rendering.assets.texture.BasicTextureRegion;
 import org.terasology.rendering.assets.texture.Texture;
 import org.terasology.rendering.assets.texture.TextureRegion;
 import org.terasology.rendering.nui.Canvas;
+import org.terasology.rendering.nui.Color;
 import org.terasology.rendering.nui.CoreWidget;
 import org.terasology.rendering.nui.ScaleMode;
 import org.terasology.rendering.nui.SubRegion;
@@ -51,23 +56,32 @@ import org.terasology.world.block.BlockAppearance;
 import org.terasology.world.block.BlockPart;
 import org.terasology.world.chunks.ChunkConstants;
 
+import com.google.common.base.Preconditions;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.Multimap;
 
 /**
  * @author mkienenb
  */
 public class MinimapGrid extends CoreWidget {
 
-    private static final Vector2i CELL_SIZE = new Vector2i(4, 4);
+    private static final ImmutableVector2i CELL_SIZE = new ImmutableVector2i(8, 8);
+    private static final ImmutableVector2i BUFFER_SIZE = new ImmutableVector2i(
+            CELL_SIZE.getX() * ChunkConstants.SIZE_X, CELL_SIZE.getY() * ChunkConstants.SIZE_Z);
 
-    private MinimapCell cell;
 
     private Binding<EntityRef> targetEntityBinding = new DefaultBinding<>(EntityRef.NULL);
     private Binding<Integer> zoomFactorBinding = new DefaultBinding<>(0);
 
     private Texture textureAtlas;
+    private TextureRegion questionMark;
+
+    private Multimap<BaseVector2i, Vector3i> dirtyBlocks = LinkedHashMultimap.create();
+
+    private WorldProvider worldProvider;
 
     private LoadingCache<Block, TextureRegion> cache = CacheBuilder.newBuilder().build(new CacheLoader<Block, TextureRegion>() {
 
@@ -91,17 +105,34 @@ public class MinimapGrid extends CoreWidget {
 
     });
 
+    private IntFunction<Float> brightness;
+
     public MinimapGrid() {
         textureAtlas = Assets.getTexture("engine:terrain").get();
-
-        WorldProvider worldProvider = CoreRegistry.get(WorldProvider.class);
-        cell = new MinimapCell(worldProvider, cache::getUnchecked);
+        questionMark = Assets.getTextureRegion("engine:items#questionMark").get();
     }
 
+    public void setHeightRange(int bottom, int top) {
+        Preconditions.checkArgument(top > bottom);
+
+        float minBright = 0.5f;
+        float fac = (1 - minBright) / (top - bottom);
+        brightness = y -> TeraMath.clamp(minBright + (y - bottom) * fac);
+    }
+
+    public void setWorldProvider(WorldProvider worldProvider) {
+        this.worldProvider = worldProvider;
+    }
 
     @Override
     public void update(float delta) {
         super.update(delta);
+    }
+
+    public void updateLocation(Vector3i worldLocation) {
+        Vector3i chunkPos = ChunkMath.calcChunkPos(worldLocation);
+        Vector3i blockPos = ChunkMath.calcBlockPos(worldLocation);
+        dirtyBlocks.put(new ImmutableVector2i(chunkPos.getX(), chunkPos.getZ()), blockPos);
     }
 
     @Override
@@ -121,7 +152,12 @@ public class MinimapGrid extends CoreWidget {
 
         Vector3f centerPosition = new Vector3f(worldPosition);
         // From top view, see what we're walking on, not what's at knee level
-        centerPosition.sub(0, 1, 0);
+        centerPosition.subY(1);
+
+        // the location (0/0) is at the center of the block 0/0
+        // we therefore add an offset of 0.5 to the map to reflect this fact
+        centerPosition.addX(0.5f);
+        centerPosition.addZ(0.5f);
 
         // define zoom factor
         int zoomLevel = getZoomFactor();
@@ -141,55 +177,52 @@ public class MinimapGrid extends CoreWidget {
         Vector3i minChunkPos = ChunkMath.calcChunkPos(centerX - colCenter, 0, centerZ - rowCenter);
         Vector3i maxChunkPos = ChunkMath.calcChunkPos(centerX + colCenter, 0, centerZ + rowCenter);
 
-        int bufferWidth = CELL_SIZE.getX() * ChunkConstants.SIZE_X;
-        int bufferHeight = CELL_SIZE.getY() * ChunkConstants.SIZE_Z;
+        int screenWidth = TeraMath.ceilToInt(BUFFER_SIZE.getX() * zoom);
+        int screenHeight = TeraMath.ceilToInt(BUFFER_SIZE.getY() * zoom);
 
-        int screenWidth = TeraMath.ceilToInt(bufferWidth * zoom);
-        int screenHeight = TeraMath.ceilToInt(bufferHeight * zoom);
-
+        Vector2i chunkPos = new Vector2i();
+        Vector3i chunkDisc = new Vector3i(ChunkConstants.SIZE_X, 1, ChunkConstants.SIZE_Z);
         for (int chunkZ = minChunkPos.getZ(); chunkZ <= maxChunkPos.getZ(); chunkZ++) {
             for (int chunkX = minChunkPos.getX(); chunkX <= maxChunkPos.getX(); chunkX++) {
-
+                chunkPos.set(chunkX, chunkZ);
                 ResourceUrn urn = new ResourceUrn("Minimap:gridcache" + chunkX + "x" + chunkZ);
-                Optional<Texture> opt = Assets.get(urn, Texture.class);
-                Vector2i bufferSize = new Vector2i(bufferWidth, bufferHeight);
+                Optional<? extends TextureRegion> opt = Assets.get(urn, Texture.class);
                 if (!opt.isPresent()) {
-                    int startY = centerY; // use player's Y pos to start searching for the surface layer
-                    try (SubRegion ignored = canvas.subRegionFBO(urn, bufferSize)) {
-                        for (int row = 0; row < ChunkConstants.SIZE_Z; row++) {
-                            for (int column = 0; column < ChunkConstants.SIZE_X; column++) {
-                                int x = column * CELL_SIZE.x;
-                                int y = row * CELL_SIZE.y;
-                                Rect2i rect = Rect2i.createFromMinAndSize(x, y, CELL_SIZE.x, CELL_SIZE.y);
+                    Vector3i worldPos = new Vector3i(chunkX * ChunkConstants.SIZE_X, centerY, chunkZ * ChunkConstants.SIZE_Z);
+                    Region3i region = Region3i.createFromMinAndSize(worldPos, chunkDisc);
+                    if (worldProvider.isRegionRelevant(region)) {
+                        int startY = centerY; // use player's Y pos to start searching for the surface layer
+                        try (SubRegion ignored = canvas.subRegionFBO(urn, BUFFER_SIZE)) {
+                            for (int row = 0; row < ChunkConstants.SIZE_Z; row++) {
 
-                                int blockX = chunkX * ChunkConstants.SIZE_X + column;
-                                int blockZ = chunkZ * ChunkConstants.SIZE_Z + row;
-                                Vector3i relLocation = new Vector3i(blockX, startY, blockZ);
+                                for (int column = 0; column < ChunkConstants.SIZE_X; column++) {
+                                    int x = column * CELL_SIZE.getX();
+                                    int y = row * CELL_SIZE.getY();
+                                    Rect2i rect = Rect2i.createFromMinAndSize(x, y, CELL_SIZE.getX(), CELL_SIZE.getY());
 
-                                try (SubRegion ignored2 = canvas.subRegion(rect, false)) {
-                                    cell.draw(canvas, relLocation); // the y component of relLocation is modified!
+                                    int blockX = chunkX * ChunkConstants.SIZE_X + column;
+                                    int blockZ = chunkZ * ChunkConstants.SIZE_Z + row;
+                                    Vector3i relLocation = new Vector3i(blockX, startY, blockZ);
+                                    drawCell(canvas, rect, relLocation); // the y component of relLocation is modified!
                                 }
                             }
                         }
+                        dirtyBlocks.removeAll(chunkPos);
+                        opt = Assets.get(urn, Texture.class);
                     }
-
-                    opt = Assets.get(urn, Texture.class);
                 }
 
-                try (SubRegion ignored = canvas.subRegion(canvas.getRegion(), false)) {
-                    float tileX = numberOfCols * 0.5f + chunkX * ChunkConstants.SIZE_X - centerPosition.getX();
-                    float tileZ = numberOfRows * 0.5f + chunkZ * ChunkConstants.SIZE_Z - centerPosition.getZ();
+                if (opt.isPresent()) {
+                    try (SubRegion ignored = canvas.subRegion(canvas.getRegion(), true)) {
+                        float tileX = numberOfCols * 0.5f + chunkX * ChunkConstants.SIZE_X - centerPosition.getX();
+                        float tileZ = numberOfRows * 0.5f + chunkZ * ChunkConstants.SIZE_Z - centerPosition.getZ();
 
-                    // the location (0/0) is at the center of the block 0/0
-                    // we therefore add an offset of 0.5 to the map to reflect this fact
-                    tileX -= 0.5f;
-                    tileZ -= 0.5f;
+                        int offX = TeraMath.floorToInt(tileX * CELL_SIZE.getX() * zoom);
+                        int offZ = TeraMath.floorToInt(tileZ * CELL_SIZE.getY() * zoom);
 
-                    int offX = TeraMath.floorToInt(tileX * CELL_SIZE.x * zoom);
-                    int offZ = TeraMath.floorToInt(tileZ * CELL_SIZE.y * zoom);
-
-                    Rect2i screenRegion = Rect2i.createFromMinAndSize(offX, offZ, screenWidth, screenHeight);
-                    canvas.drawTextureRaw(opt.get(), screenRegion, ScaleMode.SCALE_FIT, 0, 1f, 1f, -1f);
+                        Rect2i screenRegion = Rect2i.createFromMinAndSize(offX, offZ, screenWidth, screenHeight);
+                        canvas.drawTextureRaw(opt.get(), screenRegion, ScaleMode.SCALE_FIT, 0, 1f, 1f, -1f);
+                    }
                 }
             }
         }
@@ -250,4 +283,48 @@ public class MinimapGrid extends CoreWidget {
     public void bindZoomFactor(ReadOnlyBinding<Integer> offsetBinding) {
         zoomFactorBinding = offsetBinding;
     }
+
+    private void drawCell(Canvas canvas, Rect2i rect, Vector3i pos) {
+
+        Block block = worldProvider.getBlock(pos);
+        Block top = block;
+        if (isIgnored(block)) {
+            do {
+                pos.subY(1);
+                if (!worldProvider.isBlockRelevant(pos)) {
+                    canvas.drawTexture(questionMark, rect);
+                    return;
+                }
+                top = block;
+                block = worldProvider.getBlock(pos);
+            } while (isIgnored(block));
+        } else {
+            do {
+                pos.addY(1);
+                if (!worldProvider.isBlockRelevant(pos)) {
+                    canvas.drawTexture(questionMark, rect);
+                    return;
+                }
+                block = top;
+                top = worldProvider.getBlock(pos);
+            } while (!isIgnored(top));
+            pos.subY(1);
+        }
+
+        float g = brightness.apply(pos.getY());
+        Color color = new Color(g, g, g);
+
+        TextureRegion reg = cache.getUnchecked(block);
+        canvas.drawTexture(reg, rect, color);
+
+        if (!top.isInvisible()) {
+            reg = cache.getUnchecked(top);
+            canvas.drawTexture(reg, rect);
+        }
+    }
+
+    private static boolean isIgnored(Block block) {
+        return block.isPenetrable() && !block.isWater();
+    }
+
 }
