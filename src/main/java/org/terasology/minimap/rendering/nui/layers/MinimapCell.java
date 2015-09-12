@@ -44,8 +44,7 @@ public class MinimapCell {
         this.worldProvider = worldProvider;
     }
 
-    public void draw(Canvas canvas, Vector3i startLocation) {
-        Vector3i pos = new Vector3i(startLocation);
+    public void draw(Canvas canvas, Vector3i pos) {
 
         Block block = worldProvider.getBlock(pos);
         Block top = block;
@@ -69,10 +68,11 @@ public class MinimapCell {
                 block = top;
                 top = worldProvider.getBlock(pos);
             } while (!isIgnored(top));
+            pos.subY(1);
         }
 
-        int dist = pos.getY() - startLocation.getY();
-        int g = 128 + TeraMath.clamp(dist * 10, -128, 127);
+        int dist = pos.getY() - 10;
+        int g = 192 + TeraMath.clamp(dist * 5, -64, 63);
         Color color = new Color(g, g, g);
 
         TextureRegion reg = textureMap.apply(block);
@@ -80,7 +80,7 @@ public class MinimapCell {
 
         if (!top.isInvisible()) {
             reg = textureMap.apply(top);
-            canvas.drawTexture(reg, color);
+            canvas.drawTexture(reg);
         }
     }
 

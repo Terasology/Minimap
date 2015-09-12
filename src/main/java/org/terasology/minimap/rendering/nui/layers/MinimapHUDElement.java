@@ -15,13 +15,11 @@
  */
 package org.terasology.minimap.rendering.nui.layers;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.terasology.entitySystem.entity.EntityRef;
-import org.terasology.input.BindButtonEvent;
-import org.terasology.input.binds.minimap.DecreaseOffsetButton;
-import org.terasology.input.binds.minimap.IncreaseOffsetButton;
-import org.terasology.input.binds.minimap.ToggleMinimapButton;
-import org.terasology.logic.players.LocalPlayer;
-import org.terasology.registry.In;
+import org.terasology.math.TeraMath;
+import org.terasology.math.geom.Vector3i;
 import org.terasology.rendering.nui.databinding.ReadOnlyBinding;
 import org.terasology.rendering.nui.layers.hud.CoreHudWidget;
 import org.terasology.rendering.nui.widgets.UISlider;
@@ -34,16 +32,15 @@ public class MinimapHUDElement extends CoreHudWidget {
     private static final String MINIMAP_GRID_WIDGET_ID = "minimapGrid";
     private static final String MINIMAP_OFFSET_SLIDER_WIDGET_ID = "minimapOffsetSlider";
 
-    @In
-    private LocalPlayer localPlayer;
+    private static final Logger logger = LoggerFactory.getLogger(MinimapHUDElement.class);
+
+    private UISlider minimapZoomSlider;
+    private MinimapGrid minimapGrid;
 
     @Override
     public void initialise() {
-        final MinimapGrid minimapGrid = find(MINIMAP_GRID_WIDGET_ID, MinimapGrid.class);
-        minimapGrid.setCellOffset(10);
-
-        EntityRef characterEntity = localPlayer.getCharacterEntity();
-        minimapGrid.setTargetEntity(characterEntity);
+        minimapGrid = find(MINIMAP_GRID_WIDGET_ID, MinimapGrid.class);
+        minimapZoomSlider = find(MINIMAP_OFFSET_SLIDER_WIDGET_ID, UISlider.class);
 
         final UISlider minimapOffsetSlider = find(MINIMAP_OFFSET_SLIDER_WIDGET_ID, UISlider.class);
         minimapOffsetSlider.setValue(0);
@@ -51,7 +48,7 @@ public class MinimapHUDElement extends CoreHudWidget {
         minimapOffsetSlider.setRange(20);
         minimapOffsetSlider.setIncrement(1);
 
-        minimapGrid.bindViewingAxisOffset(new ReadOnlyBinding<Integer>() {
+        minimapGrid.bindZoomFactor(new ReadOnlyBinding<Integer>() {
             @Override
             public Integer get() {
                 return (int) minimapOffsetSlider.getValue();
@@ -59,20 +56,29 @@ public class MinimapHUDElement extends CoreHudWidget {
         });
     }
 
-    @Override
-    public void onBindEvent(BindButtonEvent event) {
-        if (event instanceof ToggleMinimapButton && event.isDown()) {
-            setVisible(!isVisible());
-            event.consume();
-        } else if (event instanceof DecreaseOffsetButton && event.isDown()) {
-            UISlider minimapOffsetSlider = find(MINIMAP_OFFSET_SLIDER_WIDGET_ID, UISlider.class);
-            minimapOffsetSlider.setValue(Math.max(minimapOffsetSlider.getMinimum(), minimapOffsetSlider.getValue() - minimapOffsetSlider.getIncrement()));
-            event.consume();
-        } else if (event instanceof IncreaseOffsetButton && event.isDown()) {
-            UISlider minimapOffsetSlider = find(MINIMAP_OFFSET_SLIDER_WIDGET_ID, UISlider.class);
-            minimapOffsetSlider.setValue(Math.min(minimapOffsetSlider.getMinimum() + minimapOffsetSlider.getRange(),
-                    minimapOffsetSlider.getValue() + minimapOffsetSlider.getIncrement()));
-            event.consume();
-        }
+    public void changeZoom(int delta) {
+        float min = minimapZoomSlider.getMinimum();
+        float range = minimapZoomSlider.getRange();
+        float increment = minimapZoomSlider.getIncrement();
+        float oldValue = minimapZoomSlider.getValue();
+        float newValue = TeraMath.clamp(oldValue + delta * increment, min, min + range);
+        minimapZoomSlider.setValue(newValue);
+    }
+
+    public void updateLocation(Vector3i worldLocation) {
+        logger.info("Updating location {}", worldLocation);
+    }
+
+    public EntityRef getTargetEntity() {
+        return minimapGrid.getTargetEntity();
+    }
+
+    public void setTargetEntity(EntityRef characterEntity) {
+        minimapGrid.setTargetEntity(characterEntity);
+    }
+
+    public void bindTargetEntity(ReadOnlyBinding<EntityRef> binding) {
+        minimapGrid.bindTargetEntity(binding);
+
     }
 }

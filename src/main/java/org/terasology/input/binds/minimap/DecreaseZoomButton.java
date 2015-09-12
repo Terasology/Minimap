@@ -26,5 +26,5 @@ import org.terasology.input.RegisterBindButton;
  */
 @RegisterBindButton(id = "decreaseMinimapViewingAxisOffset", description = "Decrease Minimap Viewing Axis Offset")
 @DefaultBinding(type = InputType.KEY, id = Keyboard.KeyId.NUMPAD_MINUS)
-public class DecreaseOffsetButton extends BindButtonEvent {
+public class DecreaseZoomButton extends BindButtonEvent {
 }

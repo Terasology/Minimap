@@ -18,22 +18,28 @@ package org.terasology.logic.players;
 
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.entitySystem.event.ReceiveEvent;
-import org.terasology.entitySystem.systems.ComponentSystem;
+import org.terasology.entitySystem.systems.BaseComponentSystem;
 import org.terasology.entitySystem.systems.RegisterSystem;
-import org.terasology.input.binds.minimap.DecreaseOffsetButton;
-import org.terasology.input.binds.minimap.IncreaseOffsetButton;
+import org.terasology.input.binds.minimap.DecreaseZoomButton;
+import org.terasology.input.binds.minimap.IncreaseZoomButton;
 import org.terasology.input.binds.minimap.ToggleMinimapButton;
 import org.terasology.logic.characters.CharacterComponent;
+import org.terasology.logic.health.DoDestroyEvent;
+import org.terasology.logic.location.LocationComponent;
+import org.terasology.math.Rect2f;
+import org.terasology.math.geom.Vector3i;
 import org.terasology.minimap.rendering.nui.layers.MinimapHUDElement;
 import org.terasology.registry.In;
 //import org.terasology.rendering.nui.ControlWidget;
 import org.terasology.rendering.nui.NUIManager;
+import org.terasology.rendering.nui.databinding.ReadOnlyBinding;
+import org.terasology.world.block.entity.placement.PlaceBlocks;
 
 /**
  * @author mkienenb
  */
 @RegisterSystem
-public class MinimapSystem implements ComponentSystem {
+public class MinimapSystem extends BaseComponentSystem {
 
     public static final String HUD_ELEMENT_MAP_ID = "minimap";
 
@@ -42,10 +48,20 @@ public class MinimapSystem implements ComponentSystem {
     @In
     private NUIManager nuiManager;
 
+    @In
+    private LocalPlayer localPlayer;
+
     @Override
     public void initialise() {
-        // TODO: get rid of return value assignment when findHUDElementWidget is in engine
-        minimapHUDElement = (MinimapHUDElement) nuiManager.getHUD().addHUDElement(HUD_ELEMENT_MAP_ID);
+        Rect2f rc = Rect2f.createFromMinAndSize(0.05f, 0.1f, 1, 1);
+        minimapHUDElement = nuiManager.getHUD().addHUDElement(HUD_ELEMENT_MAP_ID, MinimapHUDElement.class, rc);
+        minimapHUDElement.bindTargetEntity(new ReadOnlyBinding<EntityRef>() {
+
+            @Override
+            public EntityRef get() {
+                return localPlayer.getCharacterEntity();
+            }
+        });
     }
 
     @Override
@@ -55,69 +71,30 @@ public class MinimapSystem implements ComponentSystem {
     @ReceiveEvent(components = {CharacterComponent.class})
     public void onToggleMinimapButton(ToggleMinimapButton event, EntityRef entity) {
         if (event.isDown()) {
-            //            ControlWidget element = nuiManager.getHUD().findHUDElementWidget(HUD_ELEMENT_MAP_ID);
-            //            if (null != element) {
-            //                MinimapHUDElement minimapHUDElement = (MinimapHUDElement) element;
-            {
-                // TODO: get rid of return value assignment when findHUDElementWidget is in engine
-                minimapHUDElement.setVisible(!minimapHUDElement.isVisible());
-            }
-
+            minimapHUDElement.setVisible(!minimapHUDElement.isVisible());
             event.consume();
         }
     }
 
     @ReceiveEvent(components = {CharacterComponent.class})
-    public void onIncreaseOffsetButton(IncreaseOffsetButton event, EntityRef entity) {
-        if (event.isDown()) {
-            //            ControlWidget element = nuiManager.getHUD().findHUDElementWidget(HUD_ELEMENT_MAP_ID);
-            //            if (null != element) {
-            //                MinimapHUDElement minimapHUDElement = (MinimapHUDElement) element;
-            {
-                // TODO: get rid of return value assignment when findHUDElementWidget is in engine
-                minimapHUDElement.onBindEvent(event);
-            }
-
-            event.consume();
-        }
+    public void onIncreaseZoomButton(IncreaseZoomButton event, EntityRef entity) {
+        minimapHUDElement.changeZoom(1);
     }
 
     @ReceiveEvent(components = {CharacterComponent.class})
-    public void onDecreaseOffsetButton(DecreaseOffsetButton event, EntityRef entity) {
-        if (event.isDown()) {
-            //            ControlWidget element = nuiManager.getHUD().findHUDElementWidget(HUD_ELEMENT_MAP_ID);
-            //            if (null != element) {
-            //                MinimapHUDElement minimapHUDElement = (MinimapHUDElement) element;
-            {
-                // TODO: get rid of return value assignment when findHUDElementWidget is in engine
-                minimapHUDElement.onBindEvent(event);
-            }
+    public void onDecreaseZoomButton(DecreaseZoomButton event, EntityRef entity) {
+        minimapHUDElement.changeZoom(-1);
+    }
 
-            event.consume();
+    @ReceiveEvent
+    public void onDestroyBlock(DoDestroyEvent event, EntityRef entity, LocationComponent locationComp) {
+        minimapHUDElement.updateLocation(new Vector3i(locationComp.getWorldPosition()));
+    }
+
+    @ReceiveEvent
+    public void onPlaceBlock(PlaceBlocks event, EntityRef entity) {
+        for (Vector3i pos : event.getBlocks().keySet()) {
+            minimapHUDElement.updateLocation(pos);
         }
-    }
-
-    @Override
-    public void preBegin() {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void postBegin() {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void preSave() {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void postSave() {
-        // TODO Auto-generated method stub
-
     }
 }

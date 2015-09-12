@@ -23,7 +23,6 @@ import org.terasology.assets.ResourceUrn;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.logic.characters.CharacterComponent;
 import org.terasology.logic.location.LocationComponent;
-import org.terasology.logic.players.LocalPlayer;
 import org.terasology.math.Border;
 import org.terasology.math.ChunkMath;
 import org.terasology.math.TeraMath;
@@ -66,8 +65,7 @@ public class MinimapGrid extends CoreWidget {
     private MinimapCell cell;
 
     private Binding<EntityRef> targetEntityBinding = new DefaultBinding<>(EntityRef.NULL);
-    private Binding<Integer> cellOffsetBinding = new DefaultBinding<>(0);
-    private Binding<Integer> viewingAxisOffsetBinding = new DefaultBinding<>(0);
+    private Binding<Integer> zoomFactorBinding = new DefaultBinding<>(0);
 
     private Texture textureAtlas;
 
@@ -111,10 +109,9 @@ public class MinimapGrid extends CoreWidget {
 
         Vector3f worldPosition = null;
 
-        LocalPlayer localPlayer = CoreRegistry.get(LocalPlayer.class);
-        EntityRef entity = localPlayer.getCharacterEntity();
+        EntityRef entity = getTargetEntity();
         LocationComponent locationComponent = entity.getComponent(LocationComponent.class);
-        CharacterComponent character = localPlayer.getCharacterEntity().getComponent(CharacterComponent.class);
+        CharacterComponent character = entity.getComponent(CharacterComponent.class);
         float rotation = (float) ((character != null) ? -character.yaw * Math.PI / 180f : 0);
         if (null != locationComponent) {
             worldPosition = locationComponent.getWorldPosition();
@@ -127,7 +124,7 @@ public class MinimapGrid extends CoreWidget {
         centerPosition.sub(0, 1, 0);
 
         // define zoom factor
-        int zoomLevel = getViewingAxisOffset();
+        int zoomLevel = getZoomFactor();
         float zoomDelta = 0.25f;
         float zoom = (float) Math.pow(2.0, zoomLevel * zoomDelta);
         int width = getPreferredContentSize().getX();
@@ -139,6 +136,7 @@ public class MinimapGrid extends CoreWidget {
         int colCenter = TeraMath.ceilToInt(numberOfCols * 0.5f);
 
         int centerX = TeraMath.floorToInt(centerPosition.getX());
+        int centerY = TeraMath.floorToInt(centerPosition.getY());
         int centerZ = TeraMath.floorToInt(centerPosition.getZ());
         Vector3i minChunkPos = ChunkMath.calcChunkPos(centerX - colCenter, 0, centerZ - rowCenter);
         Vector3i maxChunkPos = ChunkMath.calcChunkPos(centerX + colCenter, 0, centerZ + rowCenter);
@@ -156,6 +154,7 @@ public class MinimapGrid extends CoreWidget {
                 Optional<Texture> opt = Assets.get(urn, Texture.class);
                 Vector2i bufferSize = new Vector2i(bufferWidth, bufferHeight);
                 if (!opt.isPresent()) {
+                    int startY = centerY; // use player's Y pos to start searching for the surface layer
                     try (SubRegion ignored = canvas.subRegionFBO(urn, bufferSize)) {
                         for (int row = 0; row < ChunkConstants.SIZE_Z; row++) {
                             for (int column = 0; column < ChunkConstants.SIZE_X; column++) {
@@ -165,10 +164,10 @@ public class MinimapGrid extends CoreWidget {
 
                                 int blockX = chunkX * ChunkConstants.SIZE_X + column;
                                 int blockZ = chunkZ * ChunkConstants.SIZE_Z + row;
-                                Vector3i relLocation = new Vector3i(blockX, 9, blockZ);
+                                Vector3i relLocation = new Vector3i(blockX, startY, blockZ);
 
                                 try (SubRegion ignored2 = canvas.subRegion(rect, false)) {
-                                    cell.draw(canvas, relLocation);
+                                    cell.draw(canvas, relLocation); // the y component of relLocation is modified!
                                 }
                             }
                         }
@@ -177,14 +176,20 @@ public class MinimapGrid extends CoreWidget {
                     opt = Assets.get(urn, Texture.class);
                 }
 
-                try (SubRegion ignored = canvas.subRegion(canvas.getRegion(), true)) {
-                    float tileX = centerPosition.getX() - numberOfCols * 0.5f - chunkX * ChunkConstants.SIZE_X;
-                    float tileZ = centerPosition.getZ() - numberOfRows * 0.5f - chunkZ * ChunkConstants.SIZE_Z;
+                try (SubRegion ignored = canvas.subRegion(canvas.getRegion(), false)) {
+                    float tileX = numberOfCols * 0.5f + chunkX * ChunkConstants.SIZE_X - centerPosition.getX();
+                    float tileZ = numberOfRows * 0.5f + chunkZ * ChunkConstants.SIZE_Z - centerPosition.getZ();
+
+                    // the location (0/0) is at the center of the block 0/0
+                    // we therefore add an offset of 0.5 to the map to reflect this fact
+                    tileX -= 0.5f;
+                    tileZ -= 0.5f;
+
                     int offX = TeraMath.floorToInt(tileX * CELL_SIZE.x * zoom);
                     int offZ = TeraMath.floorToInt(tileZ * CELL_SIZE.y * zoom);
 
-                    Rect2i screenRegion = Rect2i.createFromMinAndSize(-offX, -offZ, screenWidth, screenHeight);
-                    canvas.drawTextureRaw(opt.get(), screenRegion, ScaleMode.STRETCH, 0, 1f, 1f, -1f);
+                    Rect2i screenRegion = Rect2i.createFromMinAndSize(offX, offZ, screenWidth, screenHeight);
+                    canvas.drawTextureRaw(opt.get(), screenRegion, ScaleMode.SCALE_FIT, 0, 1f, 1f, -1f);
                 }
             }
         }
@@ -234,27 +239,15 @@ public class MinimapGrid extends CoreWidget {
         targetEntityBinding.set(val);
     }
 
-    public void bindCellOffset(Binding<Integer> binding) {
-        cellOffsetBinding = binding;
+    public int getZoomFactor() {
+        return zoomFactorBinding.get();
     }
 
-    public int getCellOffset() {
-        return cellOffsetBinding.get();
+    public void setZoomFactor(int val) {
+        zoomFactorBinding.set(val);
     }
 
-    public void setCellOffset(int val) {
-        cellOffsetBinding.set(val);
-    }
-
-    public int getViewingAxisOffset() {
-        return viewingAxisOffsetBinding.get();
-    }
-
-    public void setViewingAxisOffset(int val) {
-        viewingAxisOffsetBinding.set(val);
-    }
-
-    public void bindViewingAxisOffset(ReadOnlyBinding<Integer> offsetBinding) {
-        viewingAxisOffsetBinding = offsetBinding;
+    public void bindZoomFactor(ReadOnlyBinding<Integer> offsetBinding) {
+        zoomFactorBinding = offsetBinding;
     }
 }
