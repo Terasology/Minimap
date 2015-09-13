@@ -1,13 +1,11 @@
 # Minimap
-![teaser](images/2015-08-25_screenshot.jpg "A screenshot of version 0.2.1")
+![teaser](images/2015-09-13_screenshot.jpg "A screenshot of the Minimap of a Perlin World")
 
 This module adds a minimap to the UI using the HUD Element system.
 
 `M` toggles the map visibility.
 
-`Number-Pad-Zero` switches view-plane axes.
-
-`Number-Pad-Minus` and `Number-Pad-Plus` decrease and increase the offset along the primary view axis.
+`Number-Pad-Minus` and `Number-Pad-Plus` decrease and increase the zoom factor.
 
 ### License
 
