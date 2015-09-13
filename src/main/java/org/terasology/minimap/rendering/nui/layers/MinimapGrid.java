@@ -16,6 +16,7 @@
 package org.terasology.minimap.rendering.nui.layers;
 
 
+import java.util.Collection;
 import java.util.Optional;
 import java.util.function.IntFunction;
 
@@ -68,7 +69,7 @@ import com.google.common.collect.Multimap;
  */
 public class MinimapGrid extends CoreWidget {
 
-    private static final ImmutableVector2i CELL_SIZE = new ImmutableVector2i(8, 8);
+    private static final ImmutableVector2i CELL_SIZE = new ImmutableVector2i(4, 4);
     private static final ImmutableVector2i BUFFER_SIZE = new ImmutableVector2i(
             CELL_SIZE.getX() * ChunkConstants.SIZE_X, CELL_SIZE.getY() * ChunkConstants.SIZE_Z);
 
@@ -181,14 +182,14 @@ public class MinimapGrid extends CoreWidget {
         int screenHeight = TeraMath.ceilToInt(BUFFER_SIZE.getY() * zoom);
 
         Vector2i chunkPos = new Vector2i();
-        Vector3i chunkDisc = new Vector3i(ChunkConstants.SIZE_X, 1, ChunkConstants.SIZE_Z);
+        Vector3i chunkDisc = new Vector3i(ChunkConstants.SIZE_X, ChunkConstants.SIZE_Y * 2, ChunkConstants.SIZE_Z);
         for (int chunkZ = minChunkPos.getZ(); chunkZ <= maxChunkPos.getZ(); chunkZ++) {
             for (int chunkX = minChunkPos.getX(); chunkX <= maxChunkPos.getX(); chunkX++) {
                 chunkPos.set(chunkX, chunkZ);
                 ResourceUrn urn = new ResourceUrn("Minimap:gridcache" + chunkX + "x" + chunkZ);
                 Optional<? extends TextureRegion> opt = Assets.get(urn, Texture.class);
                 if (!opt.isPresent()) {
-                    Vector3i worldPos = new Vector3i(chunkX * ChunkConstants.SIZE_X, centerY, chunkZ * ChunkConstants.SIZE_Z);
+                    Vector3i worldPos = new Vector3i(chunkX * ChunkConstants.SIZE_X, 0, chunkZ * ChunkConstants.SIZE_Z);
                     Region3i region = Region3i.createFromMinAndSize(worldPos, chunkDisc);
                     if (worldProvider.isRegionRelevant(region)) {
                         int startY = centerY; // use player's Y pos to start searching for the surface layer
@@ -210,6 +211,26 @@ public class MinimapGrid extends CoreWidget {
                         dirtyBlocks.removeAll(chunkPos);
                         opt = Assets.get(urn, Texture.class);
                     }
+                }
+
+                Collection<Vector3i> chunkBlocks = dirtyBlocks.get(chunkPos);
+                if (!chunkBlocks.isEmpty()) {
+                    try (SubRegion ignored = canvas.subRegionFBO(urn, BUFFER_SIZE)) {
+                        for (Vector3i pos : chunkBlocks) {
+                            int column = pos.x();
+                            int row = pos.z();
+                            int startY = pos.getY();
+                            int x = column * CELL_SIZE.getX();
+                            int y = row * CELL_SIZE.getY();
+                            Rect2i rect = Rect2i.createFromMinAndSize(x, y, CELL_SIZE.getX(), CELL_SIZE.getY());
+
+                            int blockX = chunkX * ChunkConstants.SIZE_X + column;
+                            int blockZ = chunkZ * ChunkConstants.SIZE_Z + row;
+                            Vector3i relLocation = new Vector3i(blockX, startY, blockZ);
+                            drawCell(canvas, rect, relLocation); // the y component of relLocation is modified!
+                        }
+                    }
+                    dirtyBlocks.removeAll(chunkPos);
                 }
 
                 if (opt.isPresent()) {

@@ -61,7 +61,7 @@ public class MinimapSystem extends BaseComponentSystem {
 
     @Override
     public void initialise() {
-        Rect2f rc = Rect2f.createFromMinAndSize(0.05f, 0.1f, 1, 1);
+        Rect2f rc = Rect2f.createFromMinAndSize(0, 0, 1, 1);
         minimapHUDElement = nuiManager.getHUD().addHUDElement(HUD_ELEMENT_MAP_ID, MinimapHUDElement.class, rc);
         minimapHUDElement.bindTargetEntity(new ReadOnlyBinding<EntityRef>() {
 
