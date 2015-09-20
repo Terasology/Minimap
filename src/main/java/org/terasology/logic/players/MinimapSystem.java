@@ -70,7 +70,9 @@ public class MinimapSystem extends BaseComponentSystem {
                 return localPlayer.getCharacterEntity();
             }
         });
-        int seaLevel = worldGenerator.getWorld().getSeaLevel();
+
+        // TODO: get the sea level height from elsewhere (WorldInfo/GameInfo/GameManifest?)
+        int seaLevel = worldGenerator == null ? 10 : worldGenerator.getWorld().getSeaLevel();
         minimapHUDElement.setHeightRange(seaLevel, seaLevel + 64);
         minimapHUDElement.setWorldProvider(worldProvider);
     }
