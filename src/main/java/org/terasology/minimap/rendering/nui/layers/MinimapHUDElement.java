@@ -29,7 +29,7 @@ import org.terasology.world.WorldProvider;
 public class MinimapHUDElement extends CoreHudWidget {
 
     private static final String MINIMAP_GRID_WIDGET_ID = "minimapGrid";
-    private static final String MINIMAP_OFFSET_SLIDER_WIDGET_ID = "minimapOffsetSlider";
+    private static final String MINIMAP_ZOOM_SLIDER_WIDGET_ID = "minimapOffsetSlider";
 
     private UISlider minimapZoomSlider;
     private MinimapGrid minimapGrid;
@@ -37,9 +37,9 @@ public class MinimapHUDElement extends CoreHudWidget {
     @Override
     public void initialise() {
         minimapGrid = find(MINIMAP_GRID_WIDGET_ID, MinimapGrid.class);
-        minimapZoomSlider = find(MINIMAP_OFFSET_SLIDER_WIDGET_ID, UISlider.class);
+        minimapZoomSlider = find(MINIMAP_ZOOM_SLIDER_WIDGET_ID, UISlider.class);
 
-        final UISlider minimapOffsetSlider = find(MINIMAP_OFFSET_SLIDER_WIDGET_ID, UISlider.class);
+        final UISlider minimapOffsetSlider = find(MINIMAP_ZOOM_SLIDER_WIDGET_ID, UISlider.class);
         minimapOffsetSlider.setValue(0);
         minimapOffsetSlider.setMinimum(-10);
         minimapOffsetSlider.setRange(20);

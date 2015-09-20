@@ -87,12 +87,18 @@ public class MinimapSystem extends BaseComponentSystem {
 
     @ReceiveEvent(components = {CharacterComponent.class})
     public void onIncreaseZoomButton(IncreaseZoomButton event, EntityRef entity) {
-        minimapHUDElement.changeZoom(1);
+        if (event.isDown()) {
+            minimapHUDElement.changeZoom(1);
+            event.consume();
+        }
     }
 
     @ReceiveEvent(components = {CharacterComponent.class})
     public void onDecreaseZoomButton(DecreaseZoomButton event, EntityRef entity) {
-        minimapHUDElement.changeZoom(-1);
+        if (event.isDown()) {
+            minimapHUDElement.changeZoom(-1);
+            event.consume();
+        }
     }
 
     @ReceiveEvent

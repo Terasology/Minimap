@@ -1,9 +1,9 @@
 {
     "id" : "Minimap",
-    "version" : "0.2.2-SNAPSHOT",
-    "author" : "mkienenb",
+    "version" : "1.0.0-SNAPSHOT",
+    "author" : "mkienenb/msteiger",
     "displayName" : "Minimap",
-    "description" : "This module adds a minimap to the UI using the HUD Element system.\n\nM toggles the map visibility.  Number-Pad-Zero switches view-plane axes.\n\nNumber-Pad-Minus and Number-Pad-Plus decrease and increase the offset along the primary view axis.",
+    "description" : "This module adds a minimap to the UI using the HUD Element system.\n\nM toggles the map visibility. \n\nNumber-Pad-Minus and Number-Pad-Plus decrease and increase the zoom factor.",
     "dependencies" : [],
     "isServerSideOnly" : false
 }
