@@ -26,7 +26,7 @@ import org.terasology.input.binds.minimap.ToggleMinimapButton;
 import org.terasology.logic.characters.CharacterComponent;
 import org.terasology.logic.health.DoDestroyEvent;
 import org.terasology.logic.location.LocationComponent;
-import org.terasology.math.Rect2f;
+import org.terasology.math.geom.Rect2f;
 import org.terasology.math.geom.Vector3i;
 import org.terasology.minimap.rendering.nui.layers.MinimapHUDElement;
 import org.terasology.registry.In;
