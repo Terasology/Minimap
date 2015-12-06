@@ -20,7 +20,6 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.function.IntFunction;
 
-import org.lwjgl.opengl.GL11;
 import org.terasology.asset.Assets;
 import org.terasology.assets.ResourceUrn;
 import org.terasology.entitySystem.entity.EntityRef;
@@ -65,7 +64,7 @@ import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
 
 /**
- * @author mkienenb
+ * This is the actual minimap. All rendering-related code is located here.
  */
 public class MinimapGrid extends CoreWidget {
 

@@ -22,7 +22,7 @@ import org.terasology.input.Keyboard;
 import org.terasology.input.RegisterBindButton;
 
 /**
- * @author mkienenb
+ * Registers a binding to toggle the minimap's visibility.
  */
 @RegisterBindButton(id = "toggleMinimap", description = "Open/Close Minimap")
 @DefaultBinding(type = InputType.KEY, id = Keyboard.KeyId.M)

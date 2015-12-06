@@ -38,7 +38,7 @@ import org.terasology.world.block.entity.placement.PlaceBlocks;
 import org.terasology.world.generator.WorldGenerator;
 
 /**
- * @author mkienenb
+ * This class represents the connection to the event system and maintains the HUD element.
  */
 @RegisterSystem
 public class MinimapSystem extends BaseComponentSystem {

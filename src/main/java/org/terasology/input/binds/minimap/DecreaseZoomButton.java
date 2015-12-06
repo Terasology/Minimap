@@ -22,7 +22,7 @@ import org.terasology.input.Keyboard;
 import org.terasology.input.RegisterBindButton;
 
 /**
- * @author mkienenb
+ * Registers a binding to decrease the zoom level.
  */
 @RegisterBindButton(id = "decreaseMinimapViewingAxisOffset", description = "Decrease Minimap Viewing Axis Offset")
 @DefaultBinding(type = InputType.KEY, id = Keyboard.KeyId.NUMPAD_MINUS)
