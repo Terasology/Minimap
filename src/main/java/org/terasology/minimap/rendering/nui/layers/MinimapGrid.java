@@ -16,14 +16,15 @@
 package org.terasology.minimap.rendering.nui.layers;
 
 
-import java.util.Collection;
-import java.util.Optional;
-import java.util.function.IntFunction;
-
+import com.google.common.base.Preconditions;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.Multimap;
 import org.terasology.asset.Assets;
 import org.terasology.assets.ResourceUrn;
 import org.terasology.entitySystem.entity.EntityRef;
-import org.terasology.logic.characters.CharacterComponent;
 import org.terasology.logic.location.LocationComponent;
 import org.terasology.math.Border;
 import org.terasology.math.ChunkMath;
@@ -56,12 +57,9 @@ import org.terasology.world.block.BlockAppearance;
 import org.terasology.world.block.BlockPart;
 import org.terasology.world.chunks.ChunkConstants;
 
-import com.google.common.base.Preconditions;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import com.google.common.collect.LinkedHashMultimap;
-import com.google.common.collect.Multimap;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.function.IntFunction;
 
 /**
  * This is the actual minimap. All rendering-related code is located here.
@@ -142,10 +140,11 @@ public class MinimapGrid extends CoreWidget {
 
         EntityRef entity = getTargetEntity();
         LocationComponent locationComponent = entity.getComponent(LocationComponent.class);
-        CharacterComponent character = entity.getComponent(CharacterComponent.class);
-        float rotation = (float) ((character != null) ? -character.yaw * Math.PI / 180f : 0);
+        float rotation = 0;
         if (null != locationComponent) {
             worldPosition = locationComponent.getWorldPosition();
+            Quat4f q = locationComponent.getWorldRotation();
+            rotation = -(float) Math.atan2(2.0 * (q.y * q.w + q.x * q.z), 1.0 - 2.0 * (q.y * q.y - q.z * q.z));
         } else {
             return;
         }
@@ -264,7 +263,7 @@ public class MinimapGrid extends CoreWidget {
         material.setTexture("texture", arrowhead);
         Mesh mesh = Assets.getMesh("engine:UIBillboard").get();
         // The scaling seems to be completely wrong - 0.8f looks ok
-        canvas.drawMesh(mesh, material, screenArea, new Quat4f(0, 0, rotation), new Vector3f(), 0.8f);
+        canvas.drawMesh(mesh, material, screenArea, new Quat4f(0f, 0f, rotation), new Vector3f(), 0.8f);
     }
 
     @Override
