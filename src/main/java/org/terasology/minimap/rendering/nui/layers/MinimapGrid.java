@@ -188,21 +188,9 @@ public class MinimapGrid extends CoreWidget {
                     Vector3i worldPos = new Vector3i(chunkX * ChunkConstants.SIZE_X, 0, chunkZ * ChunkConstants.SIZE_Z);
                     Region3i region = Region3i.createFromMinAndSize(worldPos, chunkDisc);
                     if (worldProvider.isRegionRelevant(region)) {
-                        int startY = centerY; // use player's Y pos to start searching for the surface layer
                         try (SubRegion ignored = canvas.subRegionFBO(urn, BUFFER_SIZE)) {
-                            for (int row = 0; row < ChunkConstants.SIZE_Z; row++) {
-
-                                for (int column = 0; column < ChunkConstants.SIZE_X; column++) {
-                                    int x = column * CELL_SIZE.getX();
-                                    int y = row * CELL_SIZE.getY();
-                                    Rect2i rect = Rect2i.createFromMinAndSize(x, y, CELL_SIZE.getX(), CELL_SIZE.getY());
-
-                                    int blockX = chunkX * ChunkConstants.SIZE_X + column;
-                                    int blockZ = chunkZ * ChunkConstants.SIZE_Z + row;
-                                    Vector3i relLocation = new Vector3i(blockX, startY, blockZ);
-                                    drawCell(canvas, rect, relLocation); // the y component of relLocation is modified!
-                                }
-                            }
+                            // use player's center Y pos to start searching for the surface layer
+                            renderFullChunk(canvas, chunkX, chunkZ, centerY);
                         }
                         dirtyBlocks.removeAll(chunkPos);
                         opt = Assets.get(urn, Texture.class);
@@ -213,17 +201,7 @@ public class MinimapGrid extends CoreWidget {
                 if (!chunkBlocks.isEmpty()) {
                     try (SubRegion ignored = canvas.subRegionFBO(urn, BUFFER_SIZE)) {
                         for (Vector3i pos : chunkBlocks) {
-                            int column = pos.x();
-                            int row = pos.z();
-                            int startY = pos.getY();
-                            int x = column * CELL_SIZE.getX();
-                            int y = row * CELL_SIZE.getY();
-                            Rect2i rect = Rect2i.createFromMinAndSize(x, y, CELL_SIZE.getX(), CELL_SIZE.getY());
-
-                            int blockX = chunkX * ChunkConstants.SIZE_X + column;
-                            int blockZ = chunkZ * ChunkConstants.SIZE_Z + row;
-                            Vector3i relLocation = new Vector3i(blockX, startY, blockZ);
-                            drawCell(canvas, rect, relLocation); // the y component of relLocation is modified!
+                            renderDirtyBlock(canvas, chunkX, chunkZ, pos);
                         }
                     }
                     dirtyBlocks.removeAll(chunkPos);
@@ -245,6 +223,35 @@ public class MinimapGrid extends CoreWidget {
         }
 
         drawEntity(canvas, entity);
+    }
+
+    private void renderFullChunk(Canvas canvas, int chunkX, int chunkZ, int startY) {
+        for (int row = 0; row < ChunkConstants.SIZE_Z; row++) {
+            for (int column = 0; column < ChunkConstants.SIZE_X; column++) {
+                int x = column * CELL_SIZE.getX();
+                int y = row * CELL_SIZE.getY();
+                Rect2i rect = Rect2i.createFromMinAndSize(x, y, CELL_SIZE.getX(), CELL_SIZE.getY());
+
+                int blockX = chunkX * ChunkConstants.SIZE_X + column;
+                int blockZ = chunkZ * ChunkConstants.SIZE_Z + row;
+                Vector3i relLocation = new Vector3i(blockX, startY, blockZ);
+                renderCell(canvas, rect, relLocation); // the y component of relLocation is modified!
+            }
+        }
+    }
+
+    private void renderDirtyBlock(Canvas canvas, int chunkX, int chunkZ, Vector3i pos) {
+        int column = pos.x();
+        int row = pos.z();
+        int startY = pos.getY();
+        int x = column * CELL_SIZE.getX();
+        int y = row * CELL_SIZE.getY();
+        Rect2i rect = Rect2i.createFromMinAndSize(x, y, CELL_SIZE.getX(), CELL_SIZE.getY());
+
+        int blockX = chunkX * ChunkConstants.SIZE_X + column;
+        int blockZ = chunkZ * ChunkConstants.SIZE_Z + row;
+        Vector3i relLocation = new Vector3i(blockX, startY, blockZ);
+        renderCell(canvas, rect, relLocation); // the y component of relLocation is modified!
     }
 
     private void drawEntity(Canvas canvas, EntityRef entity) {
@@ -309,7 +316,7 @@ public class MinimapGrid extends CoreWidget {
         zoomFactorBinding = offsetBinding;
     }
 
-    private void drawCell(Canvas canvas, Rect2i rect, Vector3i pos) {
+    private void renderCell(Canvas canvas, Rect2i rect, Vector3i pos) {
 
         Block block = worldProvider.getBlock(pos);
         Block top = block;
