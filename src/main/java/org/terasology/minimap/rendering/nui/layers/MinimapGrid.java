@@ -184,6 +184,8 @@ public class MinimapGrid extends CoreWidget {
                 chunkPos.set(chunkX, chunkZ);
                 ResourceUrn urn = new ResourceUrn("Minimap:gridcache" + chunkX + "x" + chunkZ);
                 Optional<? extends TextureRegion> opt = Assets.get(urn, Texture.class);
+
+                // create and render to FBO texture asset, if needed
                 if (!opt.isPresent()) {
                     Vector3i worldPos = new Vector3i(chunkX * ChunkConstants.SIZE_X, 0, chunkZ * ChunkConstants.SIZE_Z);
                     Region3i region = Region3i.createFromMinAndSize(worldPos, chunkDisc);
@@ -197,6 +199,7 @@ public class MinimapGrid extends CoreWidget {
                     }
                 }
 
+                // update dirty blocks in cache texture
                 Collection<Vector3i> chunkBlocks = dirtyBlocks.get(chunkPos);
                 if (!chunkBlocks.isEmpty()) {
                     try (SubRegion ignored = canvas.subRegionFBO(urn, BUFFER_SIZE)) {
@@ -222,7 +225,7 @@ public class MinimapGrid extends CoreWidget {
             }
         }
 
-        drawEntity(canvas, entity);
+        drawArrow(canvas, locationComponent);
     }
 
     private void renderFullChunk(Canvas canvas, int chunkX, int chunkZ, int startY) {
@@ -254,7 +257,7 @@ public class MinimapGrid extends CoreWidget {
         renderCell(canvas, rect, relLocation); // the y component of relLocation is modified!
     }
 
-    private void drawEntity(Canvas canvas, EntityRef entity) {
+    private void drawArrow(Canvas canvas, LocationComponent locationComponent) {
         // draw arrowhead
         Texture arrowhead = Assets.getTexture("Minimap:arrowhead").get();
         // Drawing textures with rotation is not yet supported, see #1926
@@ -274,8 +277,10 @@ public class MinimapGrid extends CoreWidget {
         material.setTexture("texture", arrowhead);
         Mesh mesh = Assets.getMesh("engine:UIBillboard").get();
         // The scaling seems to be completely wrong - 0.8f looks ok
-        CharacterComponent character = entity.getComponent(CharacterComponent.class);
-        float rotation = (float) ((character != null) ? -character.yaw * Math.PI / 180f : 0);
+        Quat4f q = locationComponent.getWorldRotation();
+        // convert to Euler yaw angle
+        // TODO: move into quaternion
+        float rotation = -(float) Math.atan2(2.0 * (q.y * q.w + q.x * q.z), 1.0 - 2.0 * (q.y * q.y - q.z * q.z));
         canvas.drawMesh(mesh, material, screenArea, new Quat4f(0, 0, rotation), new Vector3f(), 0.8f);
     }
 
