@@ -20,7 +20,6 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.function.IntFunction;
 
-import org.terasology.asset.Assets;
 import org.terasology.assets.ResourceUrn;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.logic.characters.CharacterComponent;
@@ -50,6 +49,7 @@ import org.terasology.rendering.nui.SubRegion;
 import org.terasology.rendering.nui.databinding.Binding;
 import org.terasology.rendering.nui.databinding.DefaultBinding;
 import org.terasology.rendering.nui.databinding.ReadOnlyBinding;
+import org.terasology.utilities.Assets;
 import org.terasology.world.WorldProvider;
 import org.terasology.world.block.Block;
 import org.terasology.world.block.BlockAppearance;
@@ -72,6 +72,10 @@ public class MinimapGrid extends CoreWidget {
     private static final ImmutableVector2i BUFFER_SIZE = new ImmutableVector2i(
             CELL_SIZE.getX() * ChunkConstants.SIZE_X, CELL_SIZE.getY() * ChunkConstants.SIZE_Z);
 
+    /**
+     * The delta scale factor
+     */
+    private static final float ZOOM_DELTA = 0.25f;
 
     private Binding<EntityRef> targetEntityBinding = new DefaultBinding<>(EntityRef.NULL);
     private Binding<Integer> zoomFactorBinding = new DefaultBinding<>(0);
@@ -91,9 +95,9 @@ public class MinimapGrid extends CoreWidget {
 
             BlockPart blockPart = BlockPart.TOP;
 
-            // TODO: security issues
-            //                    WorldAtlas worldAtlas = CoreRegistry.get(WorldAtlas.class);
-            //                    float tileSize = worldAtlas.getRelativeTileSize();
+// TODO: security issues
+//                    WorldAtlas worldAtlas = CoreRegistry.get(WorldAtlas.class);
+//                    float tileSize = worldAtlas.getRelativeTileSize();
 
             float tileSize = 16f / 256f; // 256f could be replaced by textureAtlas.getWidth();
 
@@ -138,20 +142,14 @@ public class MinimapGrid extends CoreWidget {
     @Override
     public void onDraw(Canvas canvas) {
 
-        Vector3f worldPosition = null;
-
         EntityRef entity = getTargetEntity();
         LocationComponent locationComponent = entity.getComponent(LocationComponent.class);
-        CharacterComponent character = entity.getComponent(CharacterComponent.class);
-        float rotation = (float) ((character != null) ? -character.yaw * Math.PI / 180f : 0);
-        if (null != locationComponent) {
-            worldPosition = locationComponent.getWorldPosition();
-        } else {
+        if (locationComponent == null) {
             return;
         }
 
-        Vector3f centerPosition = new Vector3f(worldPosition);
-        // From top view, see what we're walking on, not what's at knee level
+        Vector3f centerPosition = new Vector3f(locationComponent.getWorldPosition());
+        // See what we're walking on, not what's at knee level
         centerPosition.subY(1);
 
         // the location (0/0) is at the center of the block 0/0
@@ -161,8 +159,7 @@ public class MinimapGrid extends CoreWidget {
 
         // define zoom factor
         int zoomLevel = getZoomFactor();
-        float zoomDelta = 0.25f;
-        float zoom = (float) Math.pow(2.0, zoomLevel * zoomDelta);
+        float zoom = (float) Math.pow(2.0, zoomLevel * ZOOM_DELTA);
         int width = getPreferredContentSize().getX();
         int height = getPreferredContentSize().getY();
         float numberOfRows = height / (zoom * CELL_SIZE.getY());
@@ -247,11 +244,17 @@ public class MinimapGrid extends CoreWidget {
             }
         }
 
+        drawEntity(canvas, entity);
+    }
+
+    private void drawEntity(Canvas canvas, EntityRef entity) {
         // draw arrowhead
         Texture arrowhead = Assets.getTexture("Minimap:arrowhead").get();
         // Drawing textures with rotation is not yet supported, see #1926
         // We therefore use a workaround based on mesh drawing
         // The width of the screenArea is doubled to avoid clipping issues when the texture is rotated
+        int width = getPreferredContentSize().getX();
+        int height = getPreferredContentSize().getY();
         int arrowWidth = arrowhead.getWidth() * 2;
         int arrowHeight = arrowhead.getHeight() * 2;
         int arrowX = (width - arrowWidth) / 2;
@@ -264,6 +267,8 @@ public class MinimapGrid extends CoreWidget {
         material.setTexture("texture", arrowhead);
         Mesh mesh = Assets.getMesh("engine:UIBillboard").get();
         // The scaling seems to be completely wrong - 0.8f looks ok
+        CharacterComponent character = entity.getComponent(CharacterComponent.class);
+        float rotation = (float) ((character != null) ? -character.yaw * Math.PI / 180f : 0);
         canvas.drawMesh(mesh, material, screenArea, new Quat4f(0, 0, rotation), new Vector3f(), 0.8f);
     }
 
