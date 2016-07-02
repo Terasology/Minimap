@@ -18,11 +18,11 @@ package org.terasology.minimap.rendering.nui.layers;
 
 import java.util.Collection;
 import java.util.Optional;
+import java.util.PriorityQueue;
 import java.util.function.IntFunction;
 
 import org.terasology.assets.ResourceUrn;
 import org.terasology.entitySystem.entity.EntityRef;
-import org.terasology.logic.characters.CharacterComponent;
 import org.terasology.logic.location.LocationComponent;
 import org.terasology.math.Border;
 import org.terasology.math.ChunkMath;
@@ -31,6 +31,7 @@ import org.terasology.math.TeraMath;
 import org.terasology.math.geom.BaseVector2i;
 import org.terasology.math.geom.ImmutableVector2i;
 import org.terasology.math.geom.Quat4f;
+import org.terasology.math.geom.Rect2f;
 import org.terasology.math.geom.Rect2i;
 import org.terasology.math.geom.Vector2f;
 import org.terasology.math.geom.Vector2i;
@@ -68,6 +69,9 @@ import com.google.common.collect.Multimap;
  */
 public class MinimapGrid extends CoreWidget {
 
+    /**
+     * The size of a cell (i.e. represents one block)
+     */
     private static final ImmutableVector2i CELL_SIZE = new ImmutableVector2i(4, 4);
     private static final ImmutableVector2i BUFFER_SIZE = new ImmutableVector2i(
             CELL_SIZE.getX() * ChunkConstants.SIZE_X, CELL_SIZE.getY() * ChunkConstants.SIZE_Z);
@@ -86,6 +90,9 @@ public class MinimapGrid extends CoreWidget {
     private Multimap<BaseVector2i, Vector3i> dirtyBlocks = LinkedHashMultimap.create();
 
     private WorldProvider worldProvider;
+
+    private final Collection<MinimapOverlay> overlays = new PriorityQueue<>((o1, o2) ->
+            Integer.compare(o1.getZOrder(), o2.getZOrder()));
 
     private LoadingCache<Block, TextureRegion> cache = CacheBuilder.newBuilder().build(new CacheLoader<Block, TextureRegion>() {
 
@@ -114,6 +121,8 @@ public class MinimapGrid extends CoreWidget {
     public MinimapGrid() {
         textureAtlas = Assets.getTexture("engine:terrain").get();
         questionMark = Assets.getTextureRegion("engine:items#questionMark").get();
+
+        overlays.add(new OriginOverlay());
     }
 
     public void setHeightRange(int bottom, int top) {
@@ -179,6 +188,8 @@ public class MinimapGrid extends CoreWidget {
 
         Vector2i chunkPos = new Vector2i();
         Vector3i chunkDisc = new Vector3i(ChunkConstants.SIZE_X, ChunkConstants.SIZE_Y * 2, ChunkConstants.SIZE_Z);
+        float cellWidth = CELL_SIZE.getX() * zoom;
+        float cellHeight = CELL_SIZE.getY() * zoom;
         for (int chunkZ = minChunkPos.getZ(); chunkZ <= maxChunkPos.getZ(); chunkZ++) {
             for (int chunkX = minChunkPos.getX(); chunkX <= maxChunkPos.getX(); chunkX++) {
                 chunkPos.set(chunkX, chunkZ);
@@ -210,23 +221,42 @@ public class MinimapGrid extends CoreWidget {
                     dirtyBlocks.removeAll(chunkPos);
                 }
 
+                // render the actual FBO texture, including overlays
                 if (opt.isPresent()) {
                     try (SubRegion ignored = canvas.subRegion(canvas.getRegion(), true)) {
                         float tileX = numberOfCols * 0.5f + chunkX * ChunkConstants.SIZE_X - centerPosition.getX();
                         float tileZ = numberOfRows * 0.5f + chunkZ * ChunkConstants.SIZE_Z - centerPosition.getZ();
 
-                        int offX = TeraMath.floorToInt(tileX * CELL_SIZE.getX() * zoom);
-                        int offZ = TeraMath.floorToInt(tileZ * CELL_SIZE.getY() * zoom);
+                        int offX = TeraMath.floorToInt(tileX * cellWidth);
+                        int offZ = TeraMath.floorToInt(tileZ * cellHeight);
 
                         Rect2i screenRegion = Rect2i.createFromMinAndSize(offX, offZ, screenWidth, screenHeight);
-                        canvas.drawTextureRaw(opt.get(), screenRegion, ScaleMode.SCALE_FIT, 0, 1f, 1f, -1f);
+                        canvas.drawTextureRaw(opt.get(), screenRegion, ScaleMode.SCALE_FIT, 0f, 1f, 1f, -1f);
                     }
                 }
+
+            }
+        }
+
+        Vector2f topLeftPosition = new Vector2f(
+                centerPosition.getX() - (width / cellWidth) * 0.5f,
+                centerPosition.getZ() - (height / cellHeight) * 0.5f);
+
+        Rect2f worldRect = Rect2f.createFromMinAndSize(
+                topLeftPosition.x, topLeftPosition.y,
+                (width / cellWidth), (height / cellHeight));
+
+        Rect2f screenRect = Rect2f.createFromMinAndSize(0, 0, width, height);
+
+        try (SubRegion ignored = canvas.subRegion(canvas.getRegion(), true)) {
+            for (MinimapOverlay overlay : overlays) {
+                overlay.render(canvas, worldRect, screenRect);
             }
         }
 
         drawArrow(canvas, locationComponent);
     }
+
 
     private void renderFullChunk(Canvas canvas, int chunkX, int chunkZ, int startY) {
         for (int row = 0; row < ChunkConstants.SIZE_Z; row++) {
