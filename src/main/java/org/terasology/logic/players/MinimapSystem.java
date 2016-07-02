@@ -28,8 +28,10 @@ import org.terasology.logic.health.DoDestroyEvent;
 import org.terasology.logic.location.LocationComponent;
 import org.terasology.math.geom.Rect2f;
 import org.terasology.math.geom.Vector3i;
+import org.terasology.minimap.overlays.MinimapOverlay;
 import org.terasology.minimap.rendering.nui.layers.MinimapHUDElement;
 import org.terasology.registry.In;
+import org.terasology.registry.Share;
 //import org.terasology.rendering.nui.ControlWidget;
 import org.terasology.rendering.nui.NUIManager;
 import org.terasology.rendering.nui.databinding.ReadOnlyBinding;
@@ -41,6 +43,7 @@ import org.terasology.world.generator.WorldGenerator;
  * This class represents the connection to the event system and maintains the HUD element.
  */
 @RegisterSystem
+@Share(MinimapSystem.class)
 public class MinimapSystem extends BaseComponentSystem {
 
     public static final String HUD_ELEMENT_MAP_ID = "minimap";
@@ -75,6 +78,14 @@ public class MinimapSystem extends BaseComponentSystem {
         int seaLevel = worldGenerator == null ? 10 : worldGenerator.getWorld().getSeaLevel();
         minimapHUDElement.setHeightRange(seaLevel, seaLevel + 64);
         minimapHUDElement.setWorldProvider(worldProvider);
+    }
+
+    public void addOverlay(MinimapOverlay overlay) {
+        minimapHUDElement.addOverlay(overlay);
+    }
+
+    public void removeOverlay(MinimapOverlay overlay) {
+        minimapHUDElement.removeOverlay(overlay);
     }
 
     @ReceiveEvent(components = {CharacterComponent.class})

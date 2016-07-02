@@ -396,4 +396,18 @@ public class MinimapGrid extends CoreWidget {
         return block.isPenetrable() && !block.isWater();
     }
 
+    /**
+     * @param overlay the overlay to add
+     */
+    public void addOverlay(MinimapOverlay overlay) {
+        overlays.add(overlay);
+    }
+
+    /**
+     * @param overlay the overlay to remove
+     */
+    public void removeOverlay(MinimapOverlay overlay) {
+        overlays.add(overlay);
+    }
+
 }
