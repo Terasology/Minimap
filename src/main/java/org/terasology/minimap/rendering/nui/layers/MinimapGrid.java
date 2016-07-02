@@ -240,19 +240,13 @@ public class MinimapGrid extends CoreWidget {
         }
 
         // render overlays
-        Vector2f topLeftPosition = new Vector2f(
-                centerPosition.getX() - (width / cellWidth) * 0.5f,
-                centerPosition.getZ() - (height / cellHeight) * 0.5f);
-
-        Rect2f worldRect = Rect2f.createFromMinAndSize(
-                topLeftPosition.x, topLeftPosition.y,
+        Rect2f worldRect = Rect2f.createFromCenterAndSize(
+                centerPosition.getX(), centerPosition.getZ(),
                 (width / cellWidth), (height / cellHeight));
-
-        Rect2f screenRect = Rect2f.createFromMinAndSize(0, 0, width, height);
 
         try (SubRegion ignored = canvas.subRegion(canvas.getRegion(), true)) {
             for (MinimapOverlay overlay : overlays) {
-                overlay.render(canvas, worldRect, screenRect);
+                overlay.render(canvas, worldRect);
             }
         }
 

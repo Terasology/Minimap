@@ -43,8 +43,8 @@ import org.terasology.world.generator.WorldGenerator;
  * This class represents the connection to the event system and maintains the HUD element.
  */
 @RegisterSystem
-@Share(MinimapSystem.class)
-public class MinimapSystem extends BaseComponentSystem {
+@Share(IMinimapSystem.class)
+public class MinimapSystem extends BaseComponentSystem implements IMinimapSystem {
 
     public static final String HUD_ELEMENT_MAP_ID = "minimap";
 
@@ -80,10 +80,12 @@ public class MinimapSystem extends BaseComponentSystem {
         minimapHUDElement.setWorldProvider(worldProvider);
     }
 
+    @Override
     public void addOverlay(MinimapOverlay overlay) {
         minimapHUDElement.addOverlay(overlay);
     }
 
+    @Override
     public void removeOverlay(MinimapOverlay overlay) {
         minimapHUDElement.removeOverlay(overlay);
     }

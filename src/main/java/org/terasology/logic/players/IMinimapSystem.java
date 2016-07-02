@@ -1,11 +1,11 @@
 /*
- * Copyright 2016 MovingBlocks
+ * Copyright 2013 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,24 +14,22 @@
  * limitations under the License.
  */
 
-package org.terasology.minimap.overlays;
+package org.terasology.logic.players;
 
-import org.terasology.math.geom.Rect2f;
-import org.terasology.rendering.nui.Canvas;
+import org.terasology.minimap.overlays.MinimapOverlay;
 
 /**
- * An overlay for the minimap
+ * This class represents the connection to the event system and maintains the HUD element.
  */
-public interface MinimapOverlay {
+public interface IMinimapSystem {
 
     /**
-     * @param canvas the canvas to use for rendering
-     * @param worldRect the world rect that is currently covered
+     * @param overlay the overlay to add
      */
-    void render(Canvas canvas, Rect2f worldRect);
+    public void addOverlay(MinimapOverlay overlay);
 
     /**
-     * @return the z position (will be rendering according to this value)
+     * @param overlay the overlay to remove
      */
-    int getZOrder();
+    public void removeOverlay(MinimapOverlay overlay);
 }

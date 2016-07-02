@@ -50,7 +50,8 @@ public class MinimapIconOverlay implements MinimapOverlay {
     }
 
     @Override
-    public void render(Canvas canvas, Rect2f worldRect, Rect2f screenRect) {
+    public void render(Canvas canvas, Rect2f worldRect) {
+        Rect2f screenRect = Rect2f.copy(canvas.getRegion());
         Rect2fTransformer t = new Rect2fTransformer(worldRect, screenRect);
         float width = (iconSize.getX() * t.getScaleX());
         float height = (iconSize.getY() * t.getScaleY());
