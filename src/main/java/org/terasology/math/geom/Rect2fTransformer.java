@@ -14,26 +14,27 @@
  * limitations under the License.
  */
 
-package org.terasology.minimap.rendering.nui.layers;
+package org.terasology.math.geom;
 
 import org.terasology.math.geom.BaseVector2i;
-import org.terasology.math.geom.Rect2i;
+import org.terasology.math.geom.Rect2f;
 import org.terasology.math.geom.Vector2i;
 
 /**
- * TODO Type description
+ * Transforms coordinates from the source rectangle into relative coordinates
+ * in the target rectangle.
  */
-public class Rect2iTransformer {
+public class Rect2fTransformer {
 
-    private Rect2i source;
-    private Rect2i target;
+    private Rect2f source;
+    private Rect2f target;
 
-    public Rect2iTransformer(Rect2i source, Rect2i target) {
+    public Rect2fTransformer(Rect2f source, Rect2f target) {
         this.source = source;
         this.target = target;
     }
 
-    public Vector2i apply(int wx, int wy) {
+    public Vector2i apply(float wx, float wy) {
         return new Vector2i(applyX(wx), applyY(wy));
     }
 
@@ -41,19 +42,19 @@ public class Rect2iTransformer {
         return new Vector2i(applyX(v.getX()), applyY(v.getY()));
     }
 
-    public int applyX(int wx) {
+    public float applyX(float wx) {
         return target.minX() + (wx - source.minX()) * target.width() / source.width();
     }
 
-    public int applyY(int wy) {
+    public float applyY(float wy) {
         return target.minY() + (wy - source.minY()) * target.height() / source.height();
     }
 
-    public Rect2i getSource() {
+    public Rect2f getSource() {
         return source;
     }
 
-    public Rect2i getTarget() {
+    public Rect2f getTarget() {
         return target;
     }
 
@@ -61,13 +62,13 @@ public class Rect2iTransformer {
      * @return
      */
     public float getScaleX() {
-        return (float)target.width() / source.width();
+        return target.width() / source.width();
     }
 
     /**
      * @return
      */
     public float getScaleY() {
-        return (float)target.height() / source.height();
+        return target.height() / source.height();
     }
 }

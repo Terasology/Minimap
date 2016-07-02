@@ -17,6 +17,8 @@ package org.terasology.minimap.rendering.nui.layers;
 
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.PriorityQueue;
 import java.util.function.IntFunction;
@@ -37,6 +39,7 @@ import org.terasology.math.geom.Vector2f;
 import org.terasology.math.geom.Vector2i;
 import org.terasology.math.geom.Vector3f;
 import org.terasology.math.geom.Vector3i;
+import org.terasology.minimap.overlays.MinimapOverlay;
 import org.terasology.rendering.assets.material.Material;
 import org.terasology.rendering.assets.mesh.Mesh;
 import org.terasology.rendering.assets.texture.BasicTextureRegion;
@@ -121,8 +124,6 @@ public class MinimapGrid extends CoreWidget {
     public MinimapGrid() {
         textureAtlas = Assets.getTexture("engine:terrain").get();
         questionMark = Assets.getTextureRegion("engine:items#questionMark").get();
-
-        overlays.add(new OriginOverlay());
     }
 
     public void setHeightRange(int bottom, int top) {
@@ -221,7 +222,7 @@ public class MinimapGrid extends CoreWidget {
                     dirtyBlocks.removeAll(chunkPos);
                 }
 
-                // render the actual FBO texture, including overlays
+                // render the actual chunk FBO texture
                 if (opt.isPresent()) {
                     try (SubRegion ignored = canvas.subRegion(canvas.getRegion(), true)) {
                         float tileX = numberOfCols * 0.5f + chunkX * ChunkConstants.SIZE_X - centerPosition.getX();
@@ -238,6 +239,7 @@ public class MinimapGrid extends CoreWidget {
             }
         }
 
+        // render overlays
         Vector2f topLeftPosition = new Vector2f(
                 centerPosition.getX() - (width / cellWidth) * 0.5f,
                 centerPosition.getZ() - (height / cellHeight) * 0.5f);

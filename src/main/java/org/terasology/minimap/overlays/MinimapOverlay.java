@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package org.terasology.minimap.rendering.nui.layers;
+package org.terasology.minimap.overlays;
 
 import org.terasology.math.geom.Rect2f;
-import org.terasology.math.geom.Rect2i;
 import org.terasology.rendering.nui.Canvas;
 
 /**
