@@ -18,6 +18,7 @@ package org.terasology.minimap.rendering.nui.layers;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.math.TeraMath;
 import org.terasology.math.geom.Vector3i;
+import org.terasology.minimap.overlays.MinimapOverlay;
 import org.terasology.rendering.nui.databinding.ReadOnlyBinding;
 import org.terasology.rendering.nui.layers.hud.CoreHudWidget;
 import org.terasology.rendering.nui.widgets.UISlider;
@@ -85,5 +86,19 @@ public class MinimapHUDElement extends CoreHudWidget {
 
     public void setWorldProvider(WorldProvider worldProvider) {
         minimapGrid.setWorldProvider(worldProvider);
+    }
+
+    /**
+     * @param overlay the overlay to add
+     */
+    public void addOverlay(MinimapOverlay overlay) {
+        minimapGrid.addOverlay(overlay);
+    }
+
+    /**
+     * @param overlay the overlay to remove
+     */
+    public void removeOverlay(MinimapOverlay overlay) {
+        minimapGrid.removeOverlay(overlay);
     }
 }
