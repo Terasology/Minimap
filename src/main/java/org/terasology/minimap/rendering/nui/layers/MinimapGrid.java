@@ -17,8 +17,6 @@ package org.terasology.minimap.rendering.nui.layers;
 
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 import java.util.PriorityQueue;
 import java.util.function.IntFunction;
@@ -60,16 +58,11 @@ import org.terasology.rendering.nui.SubRegion;
 import org.terasology.rendering.nui.databinding.Binding;
 import org.terasology.rendering.nui.databinding.DefaultBinding;
 import org.terasology.rendering.nui.databinding.ReadOnlyBinding;
-import org.terasology.utilities.Assets;
 import org.terasology.world.WorldProvider;
 import org.terasology.world.block.Block;
 import org.terasology.world.block.BlockAppearance;
 import org.terasology.world.block.BlockPart;
 import org.terasology.world.chunks.ChunkConstants;
-
-import java.util.Collection;
-import java.util.Optional;
-import java.util.function.IntFunction;
 
 /**
  * This is the actual minimap. All rendering-related code is located here.
