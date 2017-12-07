@@ -301,9 +301,8 @@ public class MinimapGrid extends CoreWidget {
         Mesh mesh = Assets.getMesh("engine:UIBillboard").get();
         // The scaling seems to be completely wrong - 0.8f looks ok
         Quat4f q = locationComponent.getWorldRotation();
-        // convert to Euler yaw angle
         // TODO: move into quaternion
-        float rotation = -(float) Math.atan2(2.0 * (q.y * q.w + q.x * q.z), 1.0 - 2.0 * (q.y * q.y - q.z * q.z));
+        float rotation = -1*q.getYaw();
         canvas.drawMesh(mesh, material, screenArea, new Quat4f(0, 0, rotation), new Vector3f(), 0.8f);
     }
 
