@@ -250,7 +250,6 @@ public class MinimapGrid extends CoreWidget {
         drawArrow(canvas, locationComponent);
     }
 
-
     private void renderFullChunk(Canvas canvas, int chunkX, int chunkZ, int startY) {
         for (int row = 0; row < ChunkConstants.SIZE_Z; row++) {
             for (int column = 0; column < ChunkConstants.SIZE_X; column++) {
@@ -345,9 +344,7 @@ public class MinimapGrid extends CoreWidget {
     }
 
     private void renderCell(Canvas canvas, Rect2i rect, Vector3i pos) {
-
         Block block = worldProvider.getBlock(pos);
-        Block top = block;
         if (isIgnored(block)) {
             do {
                 pos.subY(1);
@@ -355,7 +352,6 @@ public class MinimapGrid extends CoreWidget {
                     canvas.drawTexture(questionMark, rect);
                     return;
                 }
-                top = block;
                 block = worldProvider.getBlock(pos);
             } while (isIgnored(block));
         } else {
@@ -365,19 +361,21 @@ public class MinimapGrid extends CoreWidget {
                     canvas.drawTexture(questionMark, rect);
                     return;
                 }
-                block = top;
-                top = worldProvider.getBlock(pos);
-            } while (!isIgnored(top));
+                block = worldProvider.getBlock(pos);
+            } while (!isIgnored(block));
             pos.subY(1);
         }
 
         float g = brightness.apply(pos.getY());
         Color color = new Color(g, g, g);
 
-        TextureRegion reg = cache.getUnchecked(block);
+        TextureRegion reg = cache.getUnchecked(worldProvider.getBlock(pos));
         canvas.drawTexture(reg, rect, color);
 
-        if (!top.isInvisible()) {
+        pos.addY(1);
+        Block top = worldProvider.getBlock(pos);
+
+        if (top.isDestructible()) {
             reg = cache.getUnchecked(top);
             canvas.drawTexture(reg, rect);
         }
