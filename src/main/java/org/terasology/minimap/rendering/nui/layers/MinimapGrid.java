@@ -16,9 +16,7 @@
 package org.terasology.minimap.rendering.nui.layers;
 
 
-import java.util.Collection;
-import java.util.Optional;
-import java.util.PriorityQueue;
+import java.util.*;
 import java.util.function.IntFunction;
 
 import com.google.common.base.Preconditions;
@@ -27,6 +25,8 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.terasology.utilities.Assets;
 import org.terasology.assets.ResourceUrn;
 import org.terasology.entitySystem.entity.EntityRef;
@@ -68,7 +68,6 @@ import org.terasology.world.chunks.ChunkConstants;
  * This is the actual minimap. All rendering-related code is located here.
  */
 public class MinimapGrid extends CoreWidget {
-
     /**
      * The size of a cell (i.e. represents one block)
      */
@@ -83,6 +82,9 @@ public class MinimapGrid extends CoreWidget {
 
     private Binding<EntityRef> targetEntityBinding = new DefaultBinding<>(EntityRef.NULL);
     private Binding<Integer> zoomFactorBinding = new DefaultBinding<>(0);
+
+    private Set<EntityRef> alivePlayers = new HashSet<EntityRef>();
+    private Logger logger = LoggerFactory.getLogger(MinimapGrid.class);
 
     private Texture textureAtlas;
     private TextureRegion questionMark;
@@ -247,7 +249,7 @@ public class MinimapGrid extends CoreWidget {
             }
         }
 
-        drawArrow(canvas, locationComponent);
+        drawPlayerArrows(canvas, screenWidth, screenHeight, centerX, centerY);
     }
 
     private void renderFullChunk(Canvas canvas, int chunkX, int chunkZ, int startY) {
@@ -279,7 +281,7 @@ public class MinimapGrid extends CoreWidget {
         renderCell(canvas, rect, relLocation); // the y component of relLocation is modified!
     }
 
-    private void drawArrow(Canvas canvas, LocationComponent locationComponent) {
+    private void drawPlayerArrows(Canvas canvas, int screenWidth, int screenHeight, int centerX, int centerZ) {
         // draw arrowhead
         Texture arrowhead = Assets.getTexture("Minimap:arrowhead").get();
         // Drawing textures with rotation is not yet supported, see #1926
@@ -291,19 +293,33 @@ public class MinimapGrid extends CoreWidget {
         int arrowHeight = arrowhead.getHeight() * 2;
         int arrowX = (width - arrowWidth) / 2;
         int arrowY = (height - arrowHeight) / 2;
-        Rect2i screenArea = Rect2i.createFromMinAndSize(arrowX, arrowY, arrowWidth, arrowHeight);
 //        canvas.drawTexture(arrowhead, arrowX, arrowY, rotation);
 
         // UITexture should be used here, but it doesn't work
         Material material = Assets.getMaterial("engine:UILitMesh").get();
         material.setTexture("texture", arrowhead);
         Mesh mesh = Assets.getMesh("engine:UIBillboard").get();
-        // The scaling seems to be completely wrong - 0.8f looks ok
-        Quat4f q = locationComponent.getWorldRotation();
-        // convert to Euler yaw angle
-        // TODO: move into quaternion
-        float rotation = -(float) Math.atan2(2.0 * (q.y * q.w + q.x * q.z), 1.0 - 2.0 * (q.y * q.y - q.z * q.z));
-        canvas.drawMesh(mesh, material, screenArea, new Quat4f(0, 0, rotation), new Vector3f(), 0.8f);
+
+        for (EntityRef alivePlayer : alivePlayers) {
+            LocationComponent playerLocationComponent = alivePlayer.getComponent(LocationComponent.class);
+            if (playerLocationComponent != null) {
+                Vector3f playerPosition = new Vector3f(playerLocationComponent.getWorldPosition());
+                int xOffset = TeraMath.ceilToInt(playerPosition.getX() - centerX);
+                int zOffset = TeraMath.ceilToInt(playerPosition.getZ() - centerZ);
+                logger.info("screenSize: " + screenWidth + " " + screenHeight);
+                logger.info("Offsets: " + xOffset + " " + zOffset);
+                if (xOffset <= (screenWidth / 2) && xOffset >= (-screenWidth / 2)
+                        && zOffset <= (screenHeight / 2) && zOffset >= (-screenHeight / 2)) {
+                    // The scaling seems to be completely wrong - 0.8f looks ok
+                    Quat4f q = playerLocationComponent.getWorldRotation();
+                    // convert to Euler yaw angle
+                    // TODO: move into quaternion
+                    float rotation = -(float) Math.atan2(2.0 * (q.y * q.w + q.x * q.z), 1.0 - 2.0 * (q.y * q.y - q.z * q.z));
+                    Rect2i screenArea = Rect2i.createFromMinAndSize(arrowX + xOffset, arrowY + zOffset, arrowWidth, arrowHeight);
+                    canvas.drawMesh(mesh, material, screenArea, new Quat4f(0, 0, rotation), new Vector3f(), 0.8f);
+                }
+            }
+        }
     }
 
     @Override
@@ -383,6 +399,20 @@ public class MinimapGrid extends CoreWidget {
 
     private static boolean isIgnored(Block block) {
         return block.isPenetrable() && !block.isWater();
+    }
+
+    public void updateAlivePlayerList(Iterable<EntityRef> alivePlayersIterable) {
+        for (EntityRef player : alivePlayersIterable) {
+            alivePlayers.add(player);
+        }
+    }
+
+    public void addAlivePlayer(EntityRef player) {
+        alivePlayers.add(player);
+    }
+
+    public void removeAlivePlayer(EntityRef player) {
+        alivePlayers.remove(player);
     }
 
     /**

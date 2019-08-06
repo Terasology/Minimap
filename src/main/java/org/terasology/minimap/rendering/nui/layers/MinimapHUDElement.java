@@ -24,6 +24,8 @@ import org.terasology.rendering.nui.layers.hud.CoreHudWidget;
 import org.terasology.rendering.nui.widgets.UISlider;
 import org.terasology.world.WorldProvider;
 
+import java.util.Set;
+
 /**
  * The minimap container that arranges the actual minimap and the zoon slider
  * in a single HUD element.
@@ -78,6 +80,18 @@ public class MinimapHUDElement extends CoreHudWidget {
 
     public void bindTargetEntity(ReadOnlyBinding<EntityRef> binding) {
         minimapGrid.bindTargetEntity(binding);
+    }
+
+    public void updateAlivePlayerList(Iterable<EntityRef> alivePlayersIterable) {
+        minimapGrid.updateAlivePlayerList(alivePlayersIterable);
+    }
+
+    public void addAlivePlayer(EntityRef player) {
+        minimapGrid.addAlivePlayer(player);
+    }
+
+    public void removeAlivePlayer(EntityRef player) {
+        minimapGrid.removeAlivePlayer(player);
     }
 
     public void setHeightRange(int bottom, int top) {
