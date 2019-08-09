@@ -396,7 +396,7 @@ public class MinimapGrid extends CoreWidget {
      * @param overlay the overlay to remove
      */
     public void removeOverlay(MinimapOverlay overlay) {
-        overlays.add(overlay);
+        overlays.remove(overlay);
     }
 
 }
