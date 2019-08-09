@@ -16,7 +16,11 @@
 package org.terasology.minimap.rendering.nui.layers;
 
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.PriorityQueue;
+import java.util.Set;
 import java.util.function.IntFunction;
 
 import com.google.common.base.Preconditions;
@@ -25,8 +29,6 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.terasology.utilities.Assets;
 import org.terasology.assets.ResourceUrn;
 import org.terasology.entitySystem.entity.EntityRef;
@@ -84,7 +86,6 @@ public class MinimapGrid extends CoreWidget {
     private Binding<Integer> zoomFactorBinding = new DefaultBinding<>(0);
 
     private Set<EntityRef> alivePlayers = new HashSet<EntityRef>();
-    private Logger logger = LoggerFactory.getLogger(MinimapGrid.class);
 
     private Texture textureAtlas;
     private TextureRegion questionMark;
@@ -306,8 +307,6 @@ public class MinimapGrid extends CoreWidget {
                 Vector3f playerPosition = new Vector3f(playerLocationComponent.getWorldPosition());
                 int xOffset = TeraMath.ceilToInt(playerPosition.getX() - centerX);
                 int zOffset = TeraMath.ceilToInt(playerPosition.getZ() - centerZ);
-                logger.info("screenSize: " + screenWidth + " " + screenHeight);
-                logger.info("Offsets: " + xOffset + " " + zOffset);
                 if (xOffset <= (screenWidth / 2) && xOffset >= (-screenWidth / 2)
                         && zOffset <= (screenHeight / 2) && zOffset >= (-screenHeight / 2)) {
                     // The scaling seems to be completely wrong - 0.8f looks ok
