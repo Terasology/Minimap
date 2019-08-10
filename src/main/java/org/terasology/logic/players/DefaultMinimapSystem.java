@@ -16,23 +16,29 @@
 
 package org.terasology.logic.players;
 
+import org.terasology.engine.modes.loadProcesses.AwaitedLocalCharacterSpawnEvent;
+import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
+import org.terasology.entitySystem.event.EventPriority;
 import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.systems.BaseComponentSystem;
 import org.terasology.entitySystem.systems.RegisterSystem;
 import org.terasology.input.binds.minimap.DecreaseZoomButton;
 import org.terasology.input.binds.minimap.IncreaseZoomButton;
 import org.terasology.input.binds.minimap.ToggleMinimapButton;
+import org.terasology.logic.characters.AliveCharacterComponent;
 import org.terasology.logic.characters.CharacterComponent;
+import org.terasology.logic.health.BeforeDestroyEvent;
 import org.terasology.logic.health.DoDestroyEvent;
 import org.terasology.logic.location.LocationComponent;
+import org.terasology.logic.players.event.OnPlayerRespawnedEvent;
+import org.terasology.logic.players.event.OnPlayerSpawnedEvent;
 import org.terasology.math.geom.Rect2f;
 import org.terasology.math.geom.Vector3i;
 import org.terasology.minimap.overlays.MinimapOverlay;
 import org.terasology.minimap.rendering.nui.layers.MinimapHUDElement;
 import org.terasology.registry.In;
 import org.terasology.registry.Share;
-//import org.terasology.rendering.nui.ControlWidget;
 import org.terasology.rendering.nui.NUIManager;
 import org.terasology.rendering.nui.databinding.ReadOnlyBinding;
 import org.terasology.world.WorldProvider;
@@ -62,6 +68,9 @@ public class DefaultMinimapSystem extends BaseComponentSystem implements Minimap
     @In
     private WorldGenerator worldGenerator;
 
+    @In
+    private EntityManager entityManager;
+
     @Override
     public void initialise() {
         Rect2f rc = Rect2f.createFromMinAndSize(0, 0, 1, 1);
@@ -78,6 +87,7 @@ public class DefaultMinimapSystem extends BaseComponentSystem implements Minimap
         int seaLevel = worldGenerator == null ? 10 : worldGenerator.getWorld().getSeaLevel();
         minimapHUDElement.setHeightRange(seaLevel, seaLevel + 64);
         minimapHUDElement.setWorldProvider(worldProvider);
+        minimapHUDElement.updateAlivePlayerList(entityManager.getEntitiesWith(AliveCharacterComponent.class));
     }
 
     @Override
@@ -123,6 +133,36 @@ public class DefaultMinimapSystem extends BaseComponentSystem implements Minimap
     public void onPlaceBlock(PlaceBlocks event, EntityRef entity) {
         for (Vector3i pos : event.getBlocks().keySet()) {
             minimapHUDElement.updateLocation(pos);
+        }
+    }
+
+    @ReceiveEvent //Spawn, initial spawn on joining a server
+    public void onPlayerSpawnEvent(OnPlayerSpawnedEvent event, EntityRef player) {
+        if (minimapHUDElement != null) {
+            minimapHUDElement.addAlivePlayer(player);
+        }
+    }
+
+    @ReceiveEvent //Spawn, initial spawn on joining a server
+    public void onPlayerReSpawnEvent(OnPlayerRespawnedEvent event, EntityRef player) {
+        if (minimapHUDElement != null) {
+            minimapHUDElement.addAlivePlayer(player);
+        }
+    }
+
+    @ReceiveEvent
+    public void onAwaitedLocalCharacterSpawnEvent(AwaitedLocalCharacterSpawnEvent event, EntityRef player) {
+        if (minimapHUDElement != null && entityManager.getCountOfEntitiesWith(AliveCharacterComponent.class) != 0) {
+            minimapHUDElement.updateAlivePlayerList(entityManager.getEntitiesWith(AliveCharacterComponent.class));
+        }
+    }
+
+
+    @ReceiveEvent(priority = EventPriority.PRIORITY_HIGH, components = {CharacterComponent.class,
+                                    AliveCharacterComponent.class, PlayerCharacterComponent.class})
+    public void beforeDestroy(BeforeDestroyEvent event, EntityRef player) {
+        if (minimapHUDElement != null) {
+            minimapHUDElement.removeAlivePlayer(player);
         }
     }
 }
