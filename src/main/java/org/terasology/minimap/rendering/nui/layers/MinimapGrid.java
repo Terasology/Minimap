@@ -85,7 +85,7 @@ public class MinimapGrid extends CoreWidget {
     private Binding<EntityRef> targetEntityBinding = new DefaultBinding<>(EntityRef.NULL);
     private Binding<Integer> zoomFactorBinding = new DefaultBinding<>(0);
 
-    private Set<EntityRef> alivePlayers = new HashSet<EntityRef>();
+    private final Set<EntityRef> alivePlayers = new HashSet<EntityRef>();
 
     private Texture textureAtlas;
     private TextureRegion questionMark;
