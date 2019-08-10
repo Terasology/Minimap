@@ -250,7 +250,7 @@ public class MinimapGrid extends CoreWidget {
             }
         }
 
-        drawPlayerArrows(canvas, screenWidth, screenHeight, centerX, centerY);
+        drawPlayerArrows(canvas, zoom, centerX, centerZ);
     }
 
     private void renderFullChunk(Canvas canvas, int chunkX, int chunkZ, int startY) {
@@ -282,7 +282,7 @@ public class MinimapGrid extends CoreWidget {
         renderCell(canvas, rect, relLocation); // the y component of relLocation is modified!
     }
 
-    private void drawPlayerArrows(Canvas canvas, int screenWidth, int screenHeight, int centerX, int centerZ) {
+    private void drawPlayerArrows(Canvas canvas, float zoom, int centerX, int centerZ) {
         // draw arrowhead
         Texture arrowhead = Assets.getTexture("Minimap:arrowhead").get();
         // Drawing textures with rotation is not yet supported, see #1926
@@ -305,10 +305,10 @@ public class MinimapGrid extends CoreWidget {
             LocationComponent playerLocationComponent = alivePlayer.getComponent(LocationComponent.class);
             if (playerLocationComponent != null) {
                 Vector3f playerPosition = new Vector3f(playerLocationComponent.getWorldPosition());
-                int xOffset = TeraMath.ceilToInt(playerPosition.getX() - centerX);
-                int zOffset = TeraMath.ceilToInt(playerPosition.getZ() - centerZ);
-                if (xOffset <= (screenWidth / 2) && xOffset >= (-screenWidth / 2)
-                        && zOffset <= (screenHeight / 2) && zOffset >= (-screenHeight / 2)) {
+                int xOffset = TeraMath.floorToInt((playerPosition.getX() - centerX) * CELL_SIZE.getX() * zoom);
+                int zOffset = TeraMath.floorToInt((playerPosition.getZ() - centerZ) * CELL_SIZE.getY() * zoom);
+                if (xOffset <= (width / 2) && xOffset >= -(width / 2)
+                        && zOffset <= (height / 2) && zOffset >= -(height / 2)) {
                     // The scaling seems to be completely wrong - 0.8f looks ok
                     Quat4f q = playerLocationComponent.getWorldRotation();
                     // convert to Euler yaw angle
