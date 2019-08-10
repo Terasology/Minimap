@@ -87,9 +87,7 @@ public class DefaultMinimapSystem extends BaseComponentSystem implements Minimap
         int seaLevel = worldGenerator == null ? 10 : worldGenerator.getWorld().getSeaLevel();
         minimapHUDElement.setHeightRange(seaLevel, seaLevel + 64);
         minimapHUDElement.setWorldProvider(worldProvider);
-        if (entityManager.getCountOfEntitiesWith(AliveCharacterComponent.class) != 0) {
-            minimapHUDElement.updateAlivePlayerList(entityManager.getEntitiesWith(AliveCharacterComponent.class));
-        }
+        minimapHUDElement.updateAlivePlayerList(entityManager.getEntitiesWith(AliveCharacterComponent.class));
     }
 
     @Override
