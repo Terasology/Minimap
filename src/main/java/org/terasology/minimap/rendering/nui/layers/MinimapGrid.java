@@ -29,6 +29,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
+import org.terasology.minimap.MinimapIconComponent;
 import org.terasology.utilities.Assets;
 import org.terasology.assets.ResourceUrn;
 import org.terasology.entitySystem.entity.EntityRef;
@@ -283,27 +284,36 @@ public class MinimapGrid extends CoreWidget {
     }
 
     private void drawPlayerArrows(Canvas canvas, float zoom, int centerX, int centerZ) {
-        // draw arrowhead
-        Texture arrowhead = Assets.getTexture("Minimap:arrowhead").get();
-        // Drawing textures with rotation is not yet supported, see #1926
-        // We therefore use a workaround based on mesh drawing
-        // The width of the screenArea is doubled to avoid clipping issues when the texture is rotated
+
         int width = getPreferredContentSize().getX();
         int height = getPreferredContentSize().getY();
-        int arrowWidth = arrowhead.getWidth() * 2;
-        int arrowHeight = arrowhead.getHeight() * 2;
-        int arrowX = (width - arrowWidth) / 2;
-        int arrowY = (height - arrowHeight) / 2;
-//        canvas.drawTexture(arrowhead, arrowX, arrowY, rotation);
 
-        // UITexture should be used here, but it doesn't work
-        Material material = Assets.getMaterial("engine:UILitMesh").get();
-        material.setTexture("texture", arrowhead);
-        Mesh mesh = Assets.getMesh("engine:UIBillboard").get();
 
         for (EntityRef alivePlayer : alivePlayers) {
             LocationComponent playerLocationComponent = alivePlayer.getComponent(LocationComponent.class);
-            if (playerLocationComponent != null) {
+            MinimapIconComponent minimapIconComponent = alivePlayer.getComponent(MinimapIconComponent.class);
+            if (playerLocationComponent != null && minimapIconComponent != null) {
+                // draw arrowhead
+                if (!Assets.getTexture(minimapIconComponent.value).isPresent()) {
+                    continue;
+                }
+
+                Texture arrowhead = Assets.getTexture(minimapIconComponent.value).get();
+                // Drawing textures with rotation is not yet supported, see #1926
+                // We therefore use a workaround based on mesh drawing
+                // The width of the screenArea is doubled to avoid clipping issues when the texture is rotated
+                int arrowWidth = arrowhead.getWidth() * 2;
+                int arrowHeight = arrowhead.getHeight() * 2;
+                int arrowX = (width - arrowWidth) / 2;
+                int arrowY = (height - arrowHeight) / 2;
+                //canvas.drawTexture(arrowhead, arrowX, arrowY, rotation);
+
+                // UITexture should be used here, but it doesn't work
+                Material material = Assets.getMaterial("engine:UILitMesh").get();
+                material.setTexture("texture", arrowhead);
+                Mesh mesh = Assets.getMesh("engine:UIBillboard").get();
+
+
                 Vector3f playerPosition = new Vector3f(playerLocationComponent.getWorldPosition());
                 int xOffset = TeraMath.floorToInt((playerPosition.getX() - centerX) * CELL_SIZE.getX() * zoom);
                 int zOffset = TeraMath.floorToInt((playerPosition.getZ() - centerZ) * CELL_SIZE.getY() * zoom);
