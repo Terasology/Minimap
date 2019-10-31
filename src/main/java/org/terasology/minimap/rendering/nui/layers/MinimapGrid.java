@@ -291,7 +291,7 @@ public class MinimapGrid extends CoreWidget {
             MinimapIconComponent minimapIconComponent = alivePlayer.getComponent(MinimapIconComponent.class);
             if (playerLocationComponent != null && minimapIconComponent != null) {
 
-                Assets.getTexture(minimapIconComponent.iconUri).ifPresent(icon -> {
+                Assets.getTexture(minimapIconComponent.iconUrn).ifPresent(icon -> {
                     //TODO UITexture should be used here, but it doesn't work
                     Assets.getMaterial("engine:UILitMesh").ifPresent(material -> {
                         material.setTexture("texture", icon);

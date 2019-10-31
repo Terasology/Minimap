@@ -31,5 +31,5 @@ public class MinimapIconComponent implements Component {
      * sub-textures from atlas are currently not supported (the URN is of the form "{moduleName}:{resourceName}").
      */
     @Replicate
-    public String iconUri;
+    public String iconUrn;
 }
