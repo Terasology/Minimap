@@ -15,21 +15,12 @@
  */
 package org.terasology.minimap.rendering.nui.layers;
 
-
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.PriorityQueue;
-import java.util.Set;
-import java.util.function.IntFunction;
-
 import com.google.common.base.Preconditions;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
-import org.terasology.utilities.Assets;
 import org.terasology.assets.ResourceUrn;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.logic.location.LocationComponent;
@@ -46,9 +37,8 @@ import org.terasology.math.geom.Vector2f;
 import org.terasology.math.geom.Vector2i;
 import org.terasology.math.geom.Vector3f;
 import org.terasology.math.geom.Vector3i;
+import org.terasology.minimap.MinimapIconComponent;
 import org.terasology.minimap.overlays.MinimapOverlay;
-import org.terasology.rendering.assets.material.Material;
-import org.terasology.rendering.assets.mesh.Mesh;
 import org.terasology.rendering.assets.texture.BasicTextureRegion;
 import org.terasology.rendering.assets.texture.Texture;
 import org.terasology.rendering.assets.texture.TextureRegion;
@@ -60,11 +50,20 @@ import org.terasology.rendering.nui.SubRegion;
 import org.terasology.rendering.nui.databinding.Binding;
 import org.terasology.rendering.nui.databinding.DefaultBinding;
 import org.terasology.rendering.nui.databinding.ReadOnlyBinding;
+import org.terasology.utilities.Assets;
 import org.terasology.world.WorldProvider;
 import org.terasology.world.block.Block;
 import org.terasology.world.block.BlockAppearance;
 import org.terasology.world.block.BlockPart;
 import org.terasology.world.chunks.ChunkConstants;
+
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.PriorityQueue;
+import java.util.Set;
+import java.util.function.IntFunction;
 
 /**
  * This is the actual minimap. All rendering-related code is located here.
@@ -94,30 +93,30 @@ public class MinimapGrid extends CoreWidget {
 
     private WorldProvider worldProvider;
 
-    private final Collection<MinimapOverlay> overlays = new PriorityQueue<>((o1, o2) ->
-            Integer.compare(o1.getZOrder(), o2.getZOrder()));
+    private final Collection<MinimapOverlay> overlays =
+            new PriorityQueue<>(Comparator.comparingInt(MinimapOverlay::getZOrder));
 
-    private LoadingCache<Block, TextureRegion> cache = CacheBuilder.newBuilder().build(new CacheLoader<Block, TextureRegion>() {
+    private LoadingCache<Block, TextureRegion> cache =
+            CacheBuilder.newBuilder().build(new CacheLoader<Block, TextureRegion>() {
 
-        @Override
-        public TextureRegion load(Block block) {
-            BlockAppearance primaryAppearance = block.getPrimaryAppearance();
+                @Override
+                public TextureRegion load(Block block) {
+                    BlockAppearance primaryAppearance = block.getPrimaryAppearance();
 
-            BlockPart blockPart = BlockPart.TOP;
+                    BlockPart blockPart = BlockPart.TOP;
 
-// TODO: security issues
-//                    WorldAtlas worldAtlas = CoreRegistry.get(WorldAtlas.class);
-//                    float tileSize = worldAtlas.getRelativeTileSize();
+                    // TODO: security issues
+                    // WorldAtlas worldAtlas = CoreRegistry.get(WorldAtlas.class);
+                    // float tileSize = worldAtlas.getRelativeTileSize();
 
-            float tileSize = 16f / 256f; // 256f could be replaced by textureAtlas.getWidth();
+                    float tileSize = 16f / 256f; // 256f could be replaced by textureAtlas.getWidth();
 
-            Vector2f textureAtlasPos = primaryAppearance.getTextureAtlasPos(blockPart);
+                    Vector2f textureAtlasPos = primaryAppearance.getTextureAtlasPos(blockPart);
 
-            TextureRegion textureRegion = new BasicTextureRegion(textureAtlas, textureAtlasPos, new Vector2f(tileSize, tileSize));
-            return textureRegion;
-        }
+                    return new BasicTextureRegion(textureAtlas, textureAtlasPos, new Vector2f(tileSize, tileSize));
+                }
 
-    });
+            });
 
     private IntFunction<Float> brightness;
 
@@ -283,42 +282,57 @@ public class MinimapGrid extends CoreWidget {
     }
 
     private void drawPlayerArrows(Canvas canvas, float zoom, int centerX, int centerZ) {
-        // draw arrowhead
-        Texture arrowhead = Assets.getTexture("Minimap:arrowhead").get();
-        // Drawing textures with rotation is not yet supported, see #1926
-        // We therefore use a workaround based on mesh drawing
-        // The width of the screenArea is doubled to avoid clipping issues when the texture is rotated
+
         int width = getPreferredContentSize().getX();
         int height = getPreferredContentSize().getY();
-        int arrowWidth = arrowhead.getWidth() * 2;
-        int arrowHeight = arrowhead.getHeight() * 2;
-        int arrowX = (width - arrowWidth) / 2;
-        int arrowY = (height - arrowHeight) / 2;
-//        canvas.drawTexture(arrowhead, arrowX, arrowY, rotation);
-
-        // UITexture should be used here, but it doesn't work
-        Material material = Assets.getMaterial("engine:UILitMesh").get();
-        material.setTexture("texture", arrowhead);
-        Mesh mesh = Assets.getMesh("engine:UIBillboard").get();
 
         for (EntityRef alivePlayer : alivePlayers) {
             LocationComponent playerLocationComponent = alivePlayer.getComponent(LocationComponent.class);
-            if (playerLocationComponent != null) {
-                Vector3f playerPosition = new Vector3f(playerLocationComponent.getWorldPosition());
-                int xOffset = TeraMath.floorToInt((playerPosition.getX() - centerX) * CELL_SIZE.getX() * zoom);
-                int zOffset = TeraMath.floorToInt((playerPosition.getZ() - centerZ) * CELL_SIZE.getY() * zoom);
-                if (xOffset <= (width / 2) && xOffset >= -(width / 2)
-                        && zOffset <= (height / 2) && zOffset >= -(height / 2)) {
-                    // The scaling seems to be completely wrong - 0.8f looks ok
-                    Quat4f q = playerLocationComponent.getWorldRotation();
-                    // convert to Euler yaw angle
-                    // TODO: move into quaternion
-                    float rotation = -(float) Math.atan2(2.0 * (q.y * q.w + q.x * q.z), 1.0 - 2.0 * (q.y * q.y - q.z * q.z));
-                    Rect2i screenArea = Rect2i.createFromMinAndSize(arrowX + xOffset, arrowY + zOffset, arrowWidth, arrowHeight);
-                    canvas.drawMesh(mesh, material, screenArea, new Quat4f(0, 0, rotation), new Vector3f(), 0.8f);
-                }
+            MinimapIconComponent minimapIconComponent = alivePlayer.getComponent(MinimapIconComponent.class);
+            if (playerLocationComponent != null && minimapIconComponent != null) {
+
+                Assets.getTexture(minimapIconComponent.iconUrn).ifPresent(icon -> {
+                    //TODO UITexture should be used here, but it doesn't work
+                    Assets.getMaterial("engine:UILitMesh").ifPresent(material -> {
+                        material.setTexture("texture", icon);
+                        Assets.getMesh("engine:UIBillboard").ifPresent(mesh -> {
+                            // Drawing textures with rotation is not yet supported, see #1926
+                            // We therefore use a workaround based on mesh drawing
+                            // The width of the screenArea is doubled to avoid clipping issues when the texture is rotated
+                            int arrowWidth = icon.getWidth() * 2;
+                            int arrowHeight = icon.getHeight() * 2;
+                            int arrowX = (width - arrowWidth) / 2;
+                            int arrowY = (height - arrowHeight) / 2;
+                            //canvas.drawTexture(arrowhead, arrowX, arrowY, rotation);
+
+                            Vector3f playerPosition = new Vector3f(playerLocationComponent.getWorldPosition());
+                            int xOffset = TeraMath.floorToInt((playerPosition.getX() - centerX) * CELL_SIZE.getX() * zoom);
+                            int zOffset = TeraMath.floorToInt((playerPosition.getZ() - centerZ) * CELL_SIZE.getY() * zoom);
+
+                            if (isInBounds(width, height, xOffset, zOffset)) {
+                                // The scaling seems to be completely wrong - 0.8f looks ok
+                                Quat4f q = playerLocationComponent.getWorldRotation();
+                                // convert to Euler yaw angle
+                                // TODO: move into quaternion
+                                float rotation = -(float) Math.atan2(2.0 * (q.y * q.w + q.x * q.z), 1.0 - 2.0 * (q.y * q.y - q.z * q.z));
+                                Rect2i screenArea = Rect2i.createFromMinAndSize(arrowX + xOffset, arrowY + zOffset, arrowWidth, arrowHeight);
+                                canvas.drawMesh(mesh, material, screenArea, new Quat4f(0, 0, rotation), new Vector3f(), 0.8f);
+                            }
+                        });
+                    });
+                });
             }
         }
+    }
+
+    /**
+     * Determine whether a coordinate is still in bounds given by `width` x `height` after applying an offset.
+     *
+     * @return true if the offset coordinates are within the bounds determined by `width`x`height`.
+     */
+    private boolean isInBounds(int width, int height, int xOffset, int zOffset) {
+        return xOffset <= (width / 2) && xOffset >= -(width / 2)
+                && zOffset <= (height / 2) && zOffset >= -(height / 2);
     }
 
     @Override
