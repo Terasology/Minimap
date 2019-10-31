@@ -18,7 +18,15 @@ package org.terasology.minimap;
 import org.terasology.entitySystem.Component;
 import org.terasology.network.Replicate;
 
+/**
+ * Information about an icon to be drawn on the mini map.
+ *
+ * Attach this component to an entity that should be drawn on the map.
+ */
 public class MinimapIconComponent implements Component {
+    /**
+     * The {@link org.terasology.assets.ResourceUrn} as string for the icon texture to be drawn on the mini map.
+     */
     @Replicate
-    public String value;
+    public String iconUri;
 }

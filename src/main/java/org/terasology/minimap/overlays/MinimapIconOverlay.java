@@ -49,7 +49,6 @@ public class MinimapIconOverlay implements MinimapOverlay {
         this.iconSize = ImmutableVector2f.createOrUse(iconSize);
     }
 
-    @Override
     public void render(Canvas canvas, Rect2f worldRect) {
         Rect2f screenRect = Rect2f.copy(canvas.getRegion());
         Rect2fTransformer t = new Rect2fTransformer(worldRect, screenRect);
@@ -68,7 +67,6 @@ public class MinimapIconOverlay implements MinimapOverlay {
         }
     }
 
-    @Override
     public int getZOrder() {
         return 0;
     }
