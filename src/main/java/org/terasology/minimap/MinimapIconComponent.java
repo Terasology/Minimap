@@ -26,6 +26,9 @@ import org.terasology.network.Replicate;
 public class MinimapIconComponent implements Component {
     /**
      * The {@link org.terasology.assets.ResourceUrn} as string for the icon texture to be drawn on the mini map.
+     *
+     * <strong>Note:</strong> The resource urn MUST point to a {@link org.terasology.rendering.assets.texture.Texture},
+     * sub-textures from atlas are currently not supported (the URN is of the form "{moduleName}:{resourceName}").
      */
     @Replicate
     public String iconUri;
