@@ -1,9 +1,9 @@
 {
     "id": "Minimap",
     "version": "1.0.0",
-    "author": "mkienenb/msteiger",
+    "author": "mkienenb, msteiger",
     "displayName": "Minimap",
-    "description": "This module adds a minimap to the UI using the HUD Element system.\n\nM toggles the map visibility. \n\nNumber-Pad-Minus and Number-Pad-Plus decrease and increase the zoom factor.",
+    "description": "This module adds a minimap to the UI using the HUD Element system.\n\n'M' toggles the map visibility. \n\n'Number-Pad-Minus' and 'Number-Pad-Plus' decrease and increase the zoom factor.",
     "dependencies": [],
     "isServerSideOnly": false,
     "isAugmentation": true
