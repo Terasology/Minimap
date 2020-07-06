@@ -144,7 +144,7 @@ public class MinimapGrid extends CoreWidget {
 
     public void updateLocation(Vector3i worldLocation) {
         Vector3i chunkPos = ChunkMath.calcChunkPos(worldLocation);
-        Vector3i blockPos = ChunkMath.calcBlockPos(worldLocation);
+        Vector3i blockPos = ChunkMath.calcRelativeBlockPos(worldLocation);
         dirtyBlocks.put(new ImmutableVector2i(chunkPos.getX(), chunkPos.getZ()), blockPos);
     }
 
