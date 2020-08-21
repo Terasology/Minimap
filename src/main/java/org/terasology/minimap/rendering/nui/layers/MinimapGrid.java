@@ -1,18 +1,5 @@
-/*
- * Copyright 2015 MovingBlocks
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// Copyright 2020 The Terasology Foundation
+// SPDX-License-Identifier: Apache-2.0
 package org.terasology.minimap.rendering.nui.layers;
 
 import com.google.common.base.Preconditions;
@@ -21,10 +8,12 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
+import org.joml.Rectanglei;
 import org.terasology.assets.ResourceUrn;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.logic.location.LocationComponent;
-import org.terasology.math.Border;
+import org.terasology.math.JomlUtil;
+import org.terasology.nui.Border;
 import org.terasology.math.ChunkMath;
 import org.terasology.math.Region3i;
 import org.terasology.math.TeraMath;
@@ -34,7 +23,7 @@ import org.terasology.math.geom.Quat4f;
 import org.terasology.math.geom.Rect2f;
 import org.terasology.math.geom.Rect2i;
 import org.terasology.math.geom.Vector2f;
-import org.terasology.math.geom.Vector2i;
+import org.joml.Vector2i;
 import org.terasology.math.geom.Vector3f;
 import org.terasology.math.geom.Vector3i;
 import org.terasology.minimap.MinimapIconComponent;
@@ -42,14 +31,15 @@ import org.terasology.minimap.overlays.MinimapOverlay;
 import org.terasology.rendering.assets.texture.BasicTextureRegion;
 import org.terasology.rendering.assets.texture.Texture;
 import org.terasology.rendering.assets.texture.TextureRegion;
-import org.terasology.rendering.nui.Canvas;
-import org.terasology.rendering.nui.Color;
-import org.terasology.rendering.nui.CoreWidget;
-import org.terasology.rendering.nui.ScaleMode;
-import org.terasology.rendering.nui.SubRegion;
-import org.terasology.rendering.nui.databinding.Binding;
-import org.terasology.rendering.nui.databinding.DefaultBinding;
-import org.terasology.rendering.nui.databinding.ReadOnlyBinding;
+import org.terasology.nui.Canvas;
+import org.terasology.nui.Color;
+import org.terasology.nui.CoreWidget;
+import org.terasology.nui.ScaleMode;
+import org.terasology.nui.SubRegion;
+import org.terasology.nui.databinding.Binding;
+import org.terasology.nui.databinding.DefaultBinding;
+import org.terasology.nui.databinding.ReadOnlyBinding;
+import org.terasology.rendering.nui.CanvasUtility;
 import org.terasology.utilities.Assets;
 import org.terasology.world.WorldProvider;
 import org.terasology.world.block.Block;
@@ -169,8 +159,8 @@ public class MinimapGrid extends CoreWidget {
         // define zoom factor
         int zoomLevel = getZoomFactor();
         float zoom = (float) Math.pow(2.0, zoomLevel * ZOOM_DELTA);
-        int width = getPreferredContentSize().getX();
-        int height = getPreferredContentSize().getY();
+        int width = getPreferredContentSize().x();
+        int height = getPreferredContentSize().y();
         float numberOfRows = height / (zoom * CELL_SIZE.getY());
         float numberOfCols = width / (zoom * CELL_SIZE.getX());
 
@@ -201,24 +191,24 @@ public class MinimapGrid extends CoreWidget {
                     Vector3i worldPos = new Vector3i(chunkX * ChunkConstants.SIZE_X, 0, chunkZ * ChunkConstants.SIZE_Z);
                     Region3i region = Region3i.createFromMinAndSize(worldPos, chunkDisc);
                     if (worldProvider.isRegionRelevant(region)) {
-                        try (SubRegion ignored = canvas.subRegionFBO(urn, BUFFER_SIZE)) {
+                        try (SubRegion ignored = CanvasUtility.subRegionFBO(canvas, urn, BUFFER_SIZE)) {
                             // use player's center Y pos to start searching for the surface layer
                             renderFullChunk(canvas, chunkX, chunkZ, centerY);
                         }
-                        dirtyBlocks.removeAll(chunkPos);
+                        dirtyBlocks.removeAll(JomlUtil.from(chunkPos));
                         opt = Assets.get(urn, Texture.class);
                     }
                 }
 
                 // update dirty blocks in cache texture
-                Collection<Vector3i> chunkBlocks = dirtyBlocks.get(chunkPos);
+                Collection<Vector3i> chunkBlocks = dirtyBlocks.get(JomlUtil.from(chunkPos));
                 if (!chunkBlocks.isEmpty()) {
-                    try (SubRegion ignored = canvas.subRegionFBO(urn, BUFFER_SIZE)) {
+                    try (SubRegion ignored = CanvasUtility.subRegionFBO(canvas, urn, BUFFER_SIZE)) {
                         for (Vector3i pos : chunkBlocks) {
                             renderDirtyBlock(canvas, chunkX, chunkZ, pos);
                         }
                     }
-                    dirtyBlocks.removeAll(chunkPos);
+                    dirtyBlocks.removeAll(JomlUtil.from(chunkPos));
                 }
 
                 // render the actual chunk FBO texture
@@ -230,7 +220,7 @@ public class MinimapGrid extends CoreWidget {
                         int offX = TeraMath.floorToInt(tileX * cellWidth);
                         int offZ = TeraMath.floorToInt(tileZ * cellHeight);
 
-                        Rect2i screenRegion = Rect2i.createFromMinAndSize(offX, offZ, screenWidth, screenHeight);
+                        Rectanglei screenRegion = JomlUtil.rectangleiFromMinAndSize(offX, offZ, screenWidth, screenHeight);
                         canvas.drawTextureRaw(opt.get(), screenRegion, ScaleMode.SCALE_FIT, 0f, 1f, 1f, -1f);
                     }
                 }
@@ -257,7 +247,7 @@ public class MinimapGrid extends CoreWidget {
             for (int column = 0; column < ChunkConstants.SIZE_X; column++) {
                 int x = column * CELL_SIZE.getX();
                 int y = row * CELL_SIZE.getY();
-                Rect2i rect = Rect2i.createFromMinAndSize(x, y, CELL_SIZE.getX(), CELL_SIZE.getY());
+                Rectanglei rect = JomlUtil.rectangleiFromMinAndSize(x, y, CELL_SIZE.getX(), CELL_SIZE.getY());
 
                 int blockX = chunkX * ChunkConstants.SIZE_X + column;
                 int blockZ = chunkZ * ChunkConstants.SIZE_Z + row;
@@ -273,7 +263,7 @@ public class MinimapGrid extends CoreWidget {
         int startY = pos.getY();
         int x = column * CELL_SIZE.getX();
         int y = row * CELL_SIZE.getY();
-        Rect2i rect = Rect2i.createFromMinAndSize(x, y, CELL_SIZE.getX(), CELL_SIZE.getY());
+        Rectanglei rect = JomlUtil.rectangleiFromMinAndSize(x, y, CELL_SIZE.getX(), CELL_SIZE.getY());
 
         int blockX = chunkX * ChunkConstants.SIZE_X + column;
         int blockZ = chunkZ * ChunkConstants.SIZE_Z + row;
@@ -283,8 +273,8 @@ public class MinimapGrid extends CoreWidget {
 
     private void drawPlayerArrows(Canvas canvas, float zoom, int centerX, int centerZ) {
 
-        int width = getPreferredContentSize().getX();
-        int height = getPreferredContentSize().getY();
+        int width = getPreferredContentSize().x();
+        int height = getPreferredContentSize().y();
 
         for (EntityRef alivePlayer : alivePlayers) {
             LocationComponent playerLocationComponent = alivePlayer.getComponent(LocationComponent.class);
@@ -316,7 +306,7 @@ public class MinimapGrid extends CoreWidget {
                                 // TODO: move into quaternion
                                 float rotation = -(float) Math.atan2(2.0 * (q.y * q.w + q.x * q.z), 1.0 - 2.0 * (q.y * q.y - q.z * q.z));
                                 Rect2i screenArea = Rect2i.createFromMinAndSize(arrowX + xOffset, arrowY + zOffset, arrowWidth, arrowHeight);
-                                canvas.drawMesh(mesh, material, screenArea, new Quat4f(0, 0, rotation), new Vector3f(), 0.8f);
+                                CanvasUtility.drawMesh(canvas, mesh, material, screenArea, new Quat4f(0, 0, rotation), new Vector3f(), 0.8f);
                             }
                         });
                     });
@@ -372,7 +362,7 @@ public class MinimapGrid extends CoreWidget {
         zoomFactorBinding = offsetBinding;
     }
 
-    private void renderCell(Canvas canvas, Rect2i rect, Vector3i pos) {
+    private void renderCell(Canvas canvas, Rectanglei rect, Vector3i pos) {
         Block block = worldProvider.getBlock(pos);
         if (isIgnored(block)) {
             do {
