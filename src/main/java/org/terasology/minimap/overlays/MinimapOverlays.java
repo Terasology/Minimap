@@ -6,9 +6,9 @@ package org.terasology.minimap.overlays;
 import java.util.Collection;
 import java.util.Collections;
 
-import org.terasology.math.geom.BaseVector2i;
-import org.terasology.math.geom.ImmutableVector2i;
-import org.terasology.math.geom.Vector2f;
+import org.joml.Vector2f;
+import org.joml.Vector2i;
+import org.joml.Vector2ic;
 import org.terasology.rendering.assets.texture.Texture;
 import org.terasology.nui.Color;
 import org.terasology.utilities.Assets;
@@ -28,7 +28,7 @@ public final class MinimapOverlays {
     public static MinimapIconOverlay createOriginIconOverlay() {
         Color iconColor = new Color(192, 192, 192);
         Texture icon = Assets.getTexture("Minimap:maps-center-direction").get();
-        Collection<ImmutableVector2i> points = Collections.singleton(BaseVector2i.ZERO);
+        Collection<Vector2ic> points = Collections.singleton(new Vector2i());
         MinimapIconOverlay ovly = new MinimapIconOverlay(points, icon);
         ovly.setColor(iconColor);
         ovly.setIconSize(new Vector2f(4, 4));

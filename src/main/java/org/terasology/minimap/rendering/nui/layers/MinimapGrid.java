@@ -8,6 +8,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
+import org.joml.Rectanglef;
 import org.joml.Rectanglei;
 import org.terasology.assets.ResourceUrn;
 import org.terasology.entitySystem.entity.EntityRef;
@@ -28,6 +29,7 @@ import org.terasology.math.geom.Vector3f;
 import org.terasology.math.geom.Vector3i;
 import org.terasology.minimap.MinimapIconComponent;
 import org.terasology.minimap.overlays.MinimapOverlay;
+import org.terasology.nui.util.RectUtility;
 import org.terasology.rendering.assets.texture.BasicTextureRegion;
 import org.terasology.rendering.assets.texture.Texture;
 import org.terasology.rendering.assets.texture.TextureRegion;
@@ -229,13 +231,13 @@ public class MinimapGrid extends CoreWidget {
         }
 
         // render overlays
-        Rect2f worldRect = Rect2f.createFromCenterAndSize(
+        Rectanglef worldRect = RectUtility.createFromCenterAndSize(
                 centerPosition.getX(), centerPosition.getZ(),
                 (width / cellWidth), (height / cellHeight));
 
         try (SubRegion ignored = canvas.subRegion(canvas.getRegion(), true)) {
             for (MinimapOverlay overlay : overlays) {
-                overlay.render(canvas, worldRect);
+                overlay.render(canvas, new Rectanglei((int) worldRect.minX, (int) worldRect.minY, (int) worldRect.maxX, (int) worldRect.maxY));
             }
         }
 
