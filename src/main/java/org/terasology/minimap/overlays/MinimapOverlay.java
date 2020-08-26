@@ -3,7 +3,7 @@
 
 package org.terasology.minimap.overlays;
 
-import org.terasology.math.geom.Rect2f;
+import org.joml.Rectanglei;
 import org.terasology.nui.Canvas;
 
 /**
@@ -15,7 +15,7 @@ public interface MinimapOverlay {
      * @param canvas the canvas to use for rendering
      * @param worldRect the world rect that is currently covered
      */
-    void render(Canvas canvas, Rect2f worldRect);
+    void render(Canvas canvas, Rectanglei worldRect);
 
     /**
      * @return the z position (will be rendering according to this value)
