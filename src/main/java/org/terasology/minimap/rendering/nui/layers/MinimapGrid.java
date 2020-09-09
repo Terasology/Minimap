@@ -11,12 +11,22 @@ import com.google.common.collect.Multimap;
 import org.joml.Rectanglef;
 import org.joml.Rectanglei;
 import org.joml.Vector2i;
-import org.terasology.entitySystem.entity.EntityRef;
+import org.terasology.engine.entitySystem.entity.EntityRef;
+import org.terasology.engine.logic.location.LocationComponent;
+import org.terasology.engine.math.ChunkMath;
+import org.terasology.engine.math.JomlUtil;
+import org.terasology.engine.math.Region3i;
+import org.terasology.engine.rendering.assets.texture.BasicTextureRegion;
+import org.terasology.engine.rendering.assets.texture.Texture;
+import org.terasology.engine.rendering.assets.texture.TextureRegion;
+import org.terasology.engine.rendering.nui.CanvasUtility;
+import org.terasology.engine.utilities.Assets;
+import org.terasology.engine.world.WorldProvider;
+import org.terasology.engine.world.block.Block;
+import org.terasology.engine.world.block.BlockAppearance;
+import org.terasology.engine.world.block.BlockPart;
+import org.terasology.engine.world.chunks.ChunkConstants;
 import org.terasology.gestalt.assets.ResourceUrn;
-import org.terasology.logic.location.LocationComponent;
-import org.terasology.math.ChunkMath;
-import org.terasology.math.JomlUtil;
-import org.terasology.math.Region3i;
 import org.terasology.math.TeraMath;
 import org.terasology.math.geom.BaseVector2i;
 import org.terasology.math.geom.ImmutableVector2i;
@@ -37,16 +47,6 @@ import org.terasology.nui.databinding.Binding;
 import org.terasology.nui.databinding.DefaultBinding;
 import org.terasology.nui.databinding.ReadOnlyBinding;
 import org.terasology.nui.util.RectUtility;
-import org.terasology.rendering.assets.texture.BasicTextureRegion;
-import org.terasology.rendering.assets.texture.Texture;
-import org.terasology.rendering.assets.texture.TextureRegion;
-import org.terasology.rendering.nui.CanvasUtility;
-import org.terasology.utilities.Assets;
-import org.terasology.world.WorldProvider;
-import org.terasology.world.block.Block;
-import org.terasology.world.block.BlockAppearance;
-import org.terasology.world.block.BlockPart;
-import org.terasology.world.chunks.ChunkConstants;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -71,23 +71,13 @@ public class MinimapGrid extends CoreWidget {
      * The delta scale factor
      */
     private static final float ZOOM_DELTA = 0.25f;
-
-    private Binding<EntityRef> targetEntityBinding = new DefaultBinding<>(EntityRef.NULL);
-    private Binding<Integer> zoomFactorBinding = new DefaultBinding<>(0);
-
     private final Set<EntityRef> alivePlayers = new HashSet<EntityRef>();
-
-    private Texture textureAtlas;
-    private TextureRegion questionMark;
-
-    private Multimap<BaseVector2i, Vector3i> dirtyBlocks = LinkedHashMultimap.create();
-
-    private WorldProvider worldProvider;
-
+    private final Texture textureAtlas;
+    private final TextureRegion questionMark;
+    private final Multimap<BaseVector2i, Vector3i> dirtyBlocks = LinkedHashMultimap.create();
     private final Collection<MinimapOverlay> overlays =
             new PriorityQueue<>(Comparator.comparingInt(MinimapOverlay::getZOrder));
-
-    private LoadingCache<Block, TextureRegion> cache =
+    private final LoadingCache<Block, TextureRegion> cache =
             CacheBuilder.newBuilder().build(new CacheLoader<Block, TextureRegion>() {
 
                 @Override
@@ -108,12 +98,18 @@ public class MinimapGrid extends CoreWidget {
                 }
 
             });
-
+    private Binding<EntityRef> targetEntityBinding = new DefaultBinding<>(EntityRef.NULL);
+    private Binding<Integer> zoomFactorBinding = new DefaultBinding<>(0);
+    private WorldProvider worldProvider;
     private IntFunction<Float> brightness;
 
     public MinimapGrid() {
         textureAtlas = Assets.getTexture("engine:terrain").get();
         questionMark = Assets.getTextureRegion("engine:items#questionMark").get();
+    }
+
+    private static boolean isIgnored(Block block) {
+        return block.isPenetrable() && !block.isWater();
     }
 
     public void setHeightRange(int bottom, int top) {
@@ -221,7 +217,8 @@ public class MinimapGrid extends CoreWidget {
                         int offX = TeraMath.floorToInt(tileX * cellWidth);
                         int offZ = TeraMath.floorToInt(tileZ * cellHeight);
 
-                        Rectanglei screenRegion = JomlUtil.rectangleiFromMinAndSize(offX, offZ, screenWidth, screenHeight);
+                        Rectanglei screenRegion = JomlUtil.rectangleiFromMinAndSize(offX, offZ, screenWidth,
+                                screenHeight);
                         canvas.drawTextureRaw(opt.get(), screenRegion, ScaleMode.SCALE_FIT, 0f, 1f, 1f, -1f);
                     }
                 }
@@ -236,7 +233,8 @@ public class MinimapGrid extends CoreWidget {
 
         try (SubRegion ignored = canvas.subRegion(canvas.getRegion(), true)) {
             for (MinimapOverlay overlay : overlays) {
-                overlay.render(canvas, new Rectanglei((int) worldRect.minX, (int) worldRect.minY, (int) worldRect.maxX, (int) worldRect.maxY));
+                overlay.render(canvas, new Rectanglei((int) worldRect.minX, (int) worldRect.minY,
+                        (int) worldRect.maxX, (int) worldRect.maxY));
             }
         }
 
@@ -289,7 +287,8 @@ public class MinimapGrid extends CoreWidget {
                         Assets.getMesh("engine:UIBillboard").ifPresent(mesh -> {
                             // Drawing textures with rotation is not yet supported, see #1926
                             // We therefore use a workaround based on mesh drawing
-                            // The width of the screenArea is doubled to avoid clipping issues when the texture is rotated
+                            // The width of the screenArea is doubled to avoid clipping issues when the texture is 
+                            // rotated
                             int arrowWidth = icon.getWidth() * 2;
                             int arrowHeight = icon.getHeight() * 2;
                             int arrowX = (width - arrowWidth) / 2;
@@ -297,17 +296,22 @@ public class MinimapGrid extends CoreWidget {
                             //canvas.drawTexture(arrowhead, arrowX, arrowY, rotation);
 
                             Vector3f playerPosition = new Vector3f(playerLocationComponent.getWorldPosition());
-                            int xOffset = TeraMath.floorToInt((playerPosition.getX() - centerX) * CELL_SIZE.getX() * zoom);
-                            int zOffset = TeraMath.floorToInt((playerPosition.getZ() - centerZ) * CELL_SIZE.getY() * zoom);
+                            int xOffset =
+                                    TeraMath.floorToInt((playerPosition.getX() - centerX) * CELL_SIZE.getX() * zoom);
+                            int zOffset =
+                                    TeraMath.floorToInt((playerPosition.getZ() - centerZ) * CELL_SIZE.getY() * zoom);
 
                             if (isInBounds(width, height, xOffset, zOffset)) {
                                 // The scaling seems to be completely wrong - 0.8f looks ok
                                 Quat4f q = playerLocationComponent.getWorldRotation();
                                 // convert to Euler yaw angle
                                 // TODO: move into quaternion
-                                float rotation = -(float) Math.atan2(2.0 * (q.y * q.w + q.x * q.z), 1.0 - 2.0 * (q.y * q.y - q.z * q.z));
-                                Rect2i screenArea = Rect2i.createFromMinAndSize(arrowX + xOffset, arrowY + zOffset, arrowWidth, arrowHeight);
-                                CanvasUtility.drawMesh(canvas, mesh, material, screenArea, new Quat4f(0, 0, rotation), new Vector3f(), 0.8f);
+                                float rotation = -(float) Math.atan2(2.0 * (q.y * q.w + q.x * q.z),
+                                        1.0 - 2.0 * (q.y * q.y - q.z * q.z));
+                                Rect2i screenArea = Rect2i.createFromMinAndSize(arrowX + xOffset, arrowY + zOffset,
+                                        arrowWidth, arrowHeight);
+                                CanvasUtility.drawMesh(canvas, mesh, material, screenArea, new Quat4f(0, 0, rotation)
+                                        , new Vector3f(), 0.8f);
                             }
                         });
                     });
@@ -399,10 +403,6 @@ public class MinimapGrid extends CoreWidget {
             reg = cache.getUnchecked(top);
             canvas.drawTexture(reg, rect);
         }
-    }
-
-    private static boolean isIgnored(Block block) {
-        return block.isPenetrable() && !block.isWater();
     }
 
     public void updateAlivePlayerList(Iterable<EntityRef> alivePlayersIterable) {

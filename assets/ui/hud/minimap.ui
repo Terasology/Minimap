@@ -1,33 +1,33 @@
 {
-    "type" : "MinimapHudElement",
-    "id" : "minimap",
-    "contents" : {
-        "type" : "relativeLayout",
-        "contents" : [
-            {
-                "type" : "ColumnLayout",
-                "contents" : [
-                    {
-                        "type" : "MinimapGrid",
-                        "id" : "minimapGrid",
-                        "skin": "framed"
-                    },
-                    {
-                        "type" : "UISlider",
-                        "id" : "minimapOffsetSlider"
-                    }
-                ],
-                "layoutInfo" : {
-                    "use-content-width" : true,
-                    "use-content-height" : true,
-                    "position-left" : {
-                        "target" : "LEFT"
-                    },
-                    "position-top" : {
-                        "target" : "TOP"
-                    }
-                }
-            }
-        ]
-    }
+  "type": "MinimapHudElement",
+  "id": "minimap",
+  "contents": {
+    "type": "relativeLayout",
+    "contents": [
+      {
+        "type": "ColumnLayout",
+        "contents": [
+          {
+            "type": "MinimapGrid",
+            "id": "minimapGrid",
+            "skin": "framed"
+          },
+          {
+            "type": "UISlider",
+            "id": "minimapOffsetSlider"
+          }
+        ],
+        "layoutInfo": {
+          "use-content-width": true,
+          "use-content-height": true,
+          "position-left": {
+            "target": "LEFT"
+          },
+          "position-top": {
+            "target": "TOP"
+          }
+        }
+      }
+    ]
+  }
 }

@@ -3,29 +3,27 @@
 
 package org.terasology.minimap.overlays;
 
-import java.util.Collection;
-
-import org.joml.Math;
-import org.joml.Rectanglef;
 import org.joml.Rectanglei;
 import org.joml.Vector2f;
 import org.joml.Vector2fc;
 import org.joml.Vector2i;
 import org.joml.Vector2ic;
-import org.terasology.nui.util.RectUtility;
-import org.terasology.rendering.assets.texture.Texture;
+import org.terasology.engine.rendering.assets.texture.Texture;
 import org.terasology.nui.Canvas;
 import org.terasology.nui.Color;
+import org.terasology.nui.util.RectUtility;
+
+import java.util.Collection;
 
 /**
  * TODO Type description
  */
 public class MinimapIconOverlay implements MinimapOverlay {
 
-    private Vector2fc iconSize;
     private final Texture icon;
+    private final Collection<? extends Vector2ic> points;
+    private Vector2fc iconSize;
     private Color color = new Color(Color.white);
-    private Collection<? extends Vector2ic> points;
 
     public MinimapIconOverlay(Collection<? extends Vector2ic> points, Texture icon) {
         this(points, icon, new Vector2i(icon.getWidth(), icon.getHeight()));

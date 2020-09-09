@@ -2,18 +2,17 @@
 // SPDX-License-Identifier: Apache-2.0
 package org.terasology.minimap.rendering.nui.layers;
 
-import org.terasology.entitySystem.entity.EntityRef;
+import org.terasology.engine.entitySystem.entity.EntityRef;
+import org.terasology.engine.rendering.nui.layers.hud.CoreHudWidget;
+import org.terasology.engine.world.WorldProvider;
 import org.terasology.math.TeraMath;
 import org.terasology.math.geom.Vector3i;
 import org.terasology.minimap.overlays.MinimapOverlay;
 import org.terasology.nui.databinding.ReadOnlyBinding;
-import org.terasology.rendering.nui.layers.hud.CoreHudWidget;
 import org.terasology.nui.widgets.UISlider;
-import org.terasology.world.WorldProvider;
 
 /**
- * The minimap container that arranges the actual minimap and the zoon slider
- * in a single HUD element.
+ * The minimap container that arranges the actual minimap and the zoon slider in a single HUD element.
  */
 public class MinimapHUDElement extends CoreHudWidget {
 
