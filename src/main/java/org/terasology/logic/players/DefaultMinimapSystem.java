@@ -3,6 +3,7 @@
 
 package org.terasology.logic.players;
 
+import org.joml.RoundingMode;
 import org.terasology.engine.modes.loadProcesses.AwaitedLocalCharacterSpawnEvent;
 import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
@@ -21,6 +22,7 @@ import org.terasology.logic.location.LocationComponent;
 import org.terasology.logic.players.event.OnPlayerRespawnedEvent;
 import org.terasology.logic.players.event.OnPlayerSpawnedEvent;
 import org.terasology.math.geom.Rect2f;
+import org.terasology.math.geom.Vector3f;
 import org.terasology.math.geom.Vector3i;
 import org.terasology.minimap.overlays.MinimapOverlay;
 import org.terasology.minimap.rendering.nui.layers.MinimapHUDElement;
@@ -113,12 +115,13 @@ public class DefaultMinimapSystem extends BaseComponentSystem implements Minimap
 
     @ReceiveEvent
     public void onDestroyBlock(DoDestroyEvent event, EntityRef entity, LocationComponent locationComp) {
-        minimapHUDElement.updateLocation(new Vector3i(locationComp.getWorldPosition()));
+        minimapHUDElement.updateLocation(new org.joml.Vector3i(locationComp.getWorldPosition(new org.joml.Vector3f())
+                , RoundingMode.CEILING));
     }
 
     @ReceiveEvent
     public void onPlaceBlock(PlaceBlocks event, EntityRef entity) {
-        for (Vector3i pos : event.getBlocks().keySet()) {
+        for (org.joml.Vector3i pos : event.getBlocks().keySet()) {
             minimapHUDElement.updateLocation(pos);
         }
     }
