@@ -51,7 +51,7 @@ public class MinimapHUDElement extends CoreHudWidget {
         minimapZoomSlider.setValue(newValue);
     }
 
-    public void updateLocation(Vector3i worldLocation) {
+    public void updateLocation(org.joml.Vector3i worldLocation) {
         minimapGrid.updateLocation(worldLocation);
     }
 
