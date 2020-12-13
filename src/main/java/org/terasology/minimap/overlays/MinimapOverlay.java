@@ -3,7 +3,7 @@
 
 package org.terasology.minimap.overlays;
 
-import org.joml.Rectanglei;
+import org.joml.primitives.Rectanglei;
 import org.terasology.nui.Canvas;
 
 /**
