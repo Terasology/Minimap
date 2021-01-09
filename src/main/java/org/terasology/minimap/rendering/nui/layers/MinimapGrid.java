@@ -79,7 +79,7 @@ public class MinimapGrid extends CoreWidget {
     private Texture textureAtlas;
     private TextureRegion questionMark;
 
-    private Multimap<Vector2i, Vector3i> dirtyBlocks = LinkedHashMultimap.create();
+    private Multimap<Vector2ic, Vector3i> dirtyBlocks = LinkedHashMultimap.create();
 
     private WorldProvider worldProvider;
 
@@ -192,7 +192,7 @@ public class MinimapGrid extends CoreWidget {
                             // use player's center Y pos to start searching for the surface layer
                             renderFullChunk(canvas, chunkX, chunkZ, centerY);
                         }
-                        dirtyBlocks.removeAll(JomlUtil.from(chunkPos));
+                        dirtyBlocks.removeAll(chunkPos);
                         opt = Assets.get(urn, Texture.class);
                     }
                 }
@@ -205,7 +205,7 @@ public class MinimapGrid extends CoreWidget {
                             renderDirtyBlock(canvas, chunkX, chunkZ, pos);
                         }
                     }
-                    dirtyBlocks.removeAll(JomlUtil.from(chunkPos));
+                    dirtyBlocks.removeAll(chunkPos);
                 }
 
                 // render the actual chunk FBO texture
