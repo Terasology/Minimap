@@ -132,9 +132,9 @@ public class MinimapGrid extends CoreWidget {
         super.update(delta);
     }
 
-    public void updateLocation(org.joml.Vector3i worldLocation) {
-        org.joml.Vector3i chunkPos = Chunks.toChunkPos(worldLocation, new org.joml.Vector3i());
-        org.joml.Vector3i blockPos = Chunks.toRelative(worldLocation, new org.joml.Vector3i());
+    public void updateLocation(Vector3i worldLocation) {
+        Vector3i chunkPos = Chunks.toChunkPos(worldLocation, new Vector3i());
+        Vector3i blockPos = Chunks.toRelative(worldLocation, new Vector3i());
         dirtyBlocks.put(new Vector2i(chunkPos.x(), chunkPos.z()), blockPos);
     }
 
