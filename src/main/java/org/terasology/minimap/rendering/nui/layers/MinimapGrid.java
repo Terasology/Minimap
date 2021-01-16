@@ -11,6 +11,8 @@ import com.google.common.collect.Multimap;
 import org.joml.Quaternionf;
 import org.joml.Rectanglef;
 import org.joml.Rectanglei;
+import org.joml.Vector2f;
+import org.joml.Vector2fc;
 import org.joml.Vector2i;
 import org.joml.Vector2ic;
 import org.joml.Vector3f;
@@ -22,7 +24,6 @@ import org.terasology.math.JomlUtil;
 import org.terasology.math.TeraMath;
 import org.terasology.math.geom.Quat4f;
 import org.terasology.math.geom.Rect2i;
-import org.terasology.math.geom.Vector2f;
 import org.terasology.minimap.MinimapIconComponent;
 import org.terasology.minimap.overlays.MinimapOverlay;
 import org.terasology.nui.Border;
@@ -101,7 +102,7 @@ public class MinimapGrid extends CoreWidget {
 
                     float tileSize = 16f / 256f; // 256f could be replaced by textureAtlas.getWidth();
 
-                    Vector2f textureAtlasPos = primaryAppearance.getTextureAtlasPos(blockPart);
+                    Vector2fc textureAtlasPos = primaryAppearance.getTextureAtlasPos(blockPart);
 
                     return new BasicTextureRegion(textureAtlas, textureAtlasPos, new Vector2f(tileSize, tileSize));
                 }
