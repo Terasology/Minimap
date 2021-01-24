@@ -4,6 +4,7 @@
 package org.terasology.logic.players;
 
 import org.joml.RoundingMode;
+import org.joml.Vector3ic;
 import org.terasology.engine.modes.loadProcesses.AwaitedLocalCharacterSpawnEvent;
 import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
@@ -121,7 +122,7 @@ public class DefaultMinimapSystem extends BaseComponentSystem implements Minimap
 
     @ReceiveEvent
     public void onPlaceBlock(PlaceBlocks event, EntityRef entity) {
-        for (org.joml.Vector3i pos : event.getBlocks().keySet()) {
+        for (Vector3ic pos : event.getBlocks().keySet()) {
             minimapHUDElement.updateLocation(pos);
         }
     }
