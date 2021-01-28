@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 package org.terasology.minimap.rendering.nui.layers;
 
+import org.joml.Vector3ic;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.math.TeraMath;
 import org.terasology.math.geom.Vector3i;
@@ -51,7 +52,7 @@ public class MinimapHUDElement extends CoreHudWidget {
         minimapZoomSlider.setValue(newValue);
     }
 
-    public void updateLocation(org.joml.Vector3i worldLocation) {
+    public void updateLocation(Vector3ic worldLocation) {
         minimapGrid.updateLocation(worldLocation);
     }
 

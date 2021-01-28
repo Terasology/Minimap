@@ -9,6 +9,7 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
 import org.joml.Quaternionf;
+import org.joml.Vector3ic;
 import org.terasology.joml.geom.Rectanglef;
 import org.terasology.joml.geom.Rectanglei;
 import org.joml.Vector2f;
@@ -133,7 +134,7 @@ public class MinimapGrid extends CoreWidget {
         super.update(delta);
     }
 
-    public void updateLocation(Vector3i worldLocation) {
+    public void updateLocation(Vector3ic worldLocation) {
         Vector3i chunkPos = Chunks.toChunkPos(worldLocation, new Vector3i());
         Vector3i blockPos = Chunks.toRelative(worldLocation, new Vector3i());
         dirtyBlocks.put(new Vector2i(chunkPos.x(), chunkPos.z()), blockPos);
