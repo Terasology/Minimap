@@ -3,15 +3,15 @@
 
 package org.terasology.minimap.overlays;
 
-import java.util.Collection;
-import java.util.Collections;
-
 import org.joml.Vector2f;
 import org.joml.Vector2i;
 import org.joml.Vector2ic;
-import org.terasology.rendering.assets.texture.Texture;
 import org.terasology.nui.Color;
+import org.terasology.rendering.assets.texture.Texture;
 import org.terasology.utilities.Assets;
+
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * Useful helper methods for overlays
