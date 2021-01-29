@@ -3,19 +3,17 @@
 
 package org.terasology.minimap.overlays;
 
-import java.util.Collection;
-
-import org.joml.Math;
-import org.terasology.joml.geom.Rectanglef;
-import org.terasology.joml.geom.Rectanglei;
 import org.joml.Vector2f;
 import org.joml.Vector2fc;
 import org.joml.Vector2i;
 import org.joml.Vector2ic;
-import org.terasology.nui.util.RectUtility;
-import org.terasology.rendering.assets.texture.Texture;
+import org.terasology.joml.geom.Rectanglei;
 import org.terasology.nui.Canvas;
 import org.terasology.nui.Color;
+import org.terasology.nui.util.RectUtility;
+import org.terasology.rendering.assets.texture.Texture;
+
+import java.util.Collection;
 
 /**
  * TODO Type description

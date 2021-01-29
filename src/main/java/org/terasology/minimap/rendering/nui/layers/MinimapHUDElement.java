@@ -5,15 +5,14 @@ package org.terasology.minimap.rendering.nui.layers;
 import org.joml.Vector3ic;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.math.TeraMath;
-import org.terasology.math.geom.Vector3i;
 import org.terasology.minimap.overlays.MinimapOverlay;
 import org.terasology.nui.databinding.ReadOnlyBinding;
-import org.terasology.rendering.nui.layers.hud.CoreHudWidget;
 import org.terasology.nui.widgets.UISlider;
+import org.terasology.rendering.nui.layers.hud.CoreHudWidget;
 import org.terasology.world.WorldProvider;
 
 /**
- * The minimap container that arranges the actual minimap and the zoon slider
+ * The minimap container that arranges the actual minimap and the zoom slider
  * in a single HUD element.
  */
 public class MinimapHUDElement extends CoreHudWidget {
