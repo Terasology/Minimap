@@ -21,10 +21,7 @@ import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.joml.geom.Rectanglef;
 import org.terasology.joml.geom.Rectanglei;
 import org.terasology.logic.location.LocationComponent;
-import org.terasology.math.JomlUtil;
 import org.terasology.math.TeraMath;
-import org.terasology.math.geom.Quat4f;
-import org.terasology.math.geom.Rect2i;
 import org.terasology.minimap.MinimapIconComponent;
 import org.terasology.minimap.overlays.MinimapOverlay;
 import org.terasology.nui.Border;
@@ -190,7 +187,7 @@ public class MinimapGrid extends CoreWidget {
                     Vector3i worldPos = new Vector3i(chunkX * Chunks.SIZE_X, 0, chunkZ * Chunks.SIZE_Z);
                     BlockRegion region = new BlockRegion(worldPos).setSize(chunkDisc);
                     if (worldProvider.isRegionRelevant(region)) {
-                        try (SubRegion ignored = CanvasUtility.subRegionFBO(canvas, urn, JomlUtil.from(BUFFER_SIZE))) {
+                        try (SubRegion ignored = CanvasUtility.subRegionFBO(canvas, urn, BUFFER_SIZE)) {
                             // use player's center Y pos to start searching for the surface layer
                             renderFullChunk(canvas, chunkX, chunkZ, centerY);
                         }
@@ -202,7 +199,7 @@ public class MinimapGrid extends CoreWidget {
                 // update dirty blocks in cache texture
                 Collection<Vector3i> chunkBlocks = dirtyBlocks.get(chunkPos);
                 if (!chunkBlocks.isEmpty()) {
-                    try (SubRegion ignored = CanvasUtility.subRegionFBO(canvas, urn, JomlUtil.from(BUFFER_SIZE))) {
+                    try (SubRegion ignored = CanvasUtility.subRegionFBO(canvas, urn, BUFFER_SIZE)) {
                         for (Vector3i pos : chunkBlocks) {
                             renderDirtyBlock(canvas, chunkX, chunkZ, pos);
                         }
@@ -219,7 +216,7 @@ public class MinimapGrid extends CoreWidget {
                         int offX = TeraMath.floorToInt(tileX * cellWidth);
                         int offZ = TeraMath.floorToInt(tileZ * cellHeight);
 
-                        Rectanglei screenRegion = JomlUtil.rectangleiFromMinAndSize(offX, offZ, screenWidth, screenHeight);
+                        Rectanglei screenRegion = RectUtility.createFromMinAndSize(offX, offZ, screenWidth, screenHeight);
                         canvas.drawTextureRaw(opt.get(), screenRegion, ScaleMode.SCALE_FIT, 0f, 1f, 1f, -1f);
                     }
                 }
@@ -246,7 +243,7 @@ public class MinimapGrid extends CoreWidget {
             for (int column = 0; column < Chunks.SIZE_X; column++) {
                 int x = column * CELL_SIZE.x();
                 int y = row * CELL_SIZE.y();
-                Rectanglei rect = JomlUtil.rectangleiFromMinAndSize(x, y, CELL_SIZE.x(), CELL_SIZE.y());
+                Rectanglei rect = RectUtility.createFromMinAndSize(x, y, CELL_SIZE.x(), CELL_SIZE.y());
 
                 int blockX = chunkX * Chunks.SIZE_X + column;
                 int blockZ = chunkZ * Chunks.SIZE_Z + row;
@@ -262,7 +259,7 @@ public class MinimapGrid extends CoreWidget {
         int startY = pos.y();
         int x = column * CELL_SIZE.x();
         int y = row * CELL_SIZE.y();
-        Rectanglei rect = JomlUtil.rectangleiFromMinAndSize(x, y, CELL_SIZE.x(), CELL_SIZE.y());
+        Rectanglei rect = RectUtility.createFromMinAndSize(x, y, CELL_SIZE.x(), CELL_SIZE.y());
 
         int blockX = chunkX * Chunks.SIZE_X + column;
         int blockZ = chunkZ * Chunks.SIZE_Z + row;
@@ -304,8 +301,8 @@ public class MinimapGrid extends CoreWidget {
                                 // convert to Euler yaw angle
                                 // TODO: move into quaternion
                                 float rotation = -(float) Math.atan2(2.0 * (q.y * q.w + q.x * q.z), 1.0 - 2.0 * (q.y * q.y - q.z * q.z));
-                                Rect2i screenArea = Rect2i.createFromMinAndSize(arrowX + xOffset, arrowY + zOffset, arrowWidth, arrowHeight);
-                                CanvasUtility.drawMesh(canvas, mesh, material, screenArea, new Quat4f(0, 0, rotation), JomlUtil.from(new Vector3f()), 0.8f);
+                                Rectanglei screenArea = RectUtility.createFromMinAndSize(arrowX + xOffset, arrowY + zOffset, arrowWidth, arrowHeight);
+                                CanvasUtility.drawMesh(canvas, mesh, material, screenArea, new Quaternionf().rotationYXZ(0, 0, rotation), new Vector3f(), 0.8f);
                             }
                         });
                     });
