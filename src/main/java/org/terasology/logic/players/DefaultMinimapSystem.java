@@ -1,4 +1,4 @@
-// Copyright 2020 The Terasology Foundation
+// Copyright 2021 The Terasology Foundation
 // SPDX-License-Identifier: Apache-2.0
 
 package org.terasology.logic.players;
@@ -15,6 +15,7 @@ import org.terasology.entitySystem.systems.RegisterSystem;
 import org.terasology.input.binds.minimap.DecreaseZoomButton;
 import org.terasology.input.binds.minimap.IncreaseZoomButton;
 import org.terasology.input.binds.minimap.ToggleMinimapButton;
+import org.terasology.joml.geom.Rectanglef;
 import org.terasology.logic.characters.AliveCharacterComponent;
 import org.terasology.logic.characters.CharacterComponent;
 import org.terasology.logic.health.BeforeDestroyEvent;
@@ -22,7 +23,6 @@ import org.terasology.logic.health.DoDestroyEvent;
 import org.terasology.logic.location.LocationComponent;
 import org.terasology.logic.players.event.OnPlayerRespawnedEvent;
 import org.terasology.logic.players.event.OnPlayerSpawnedEvent;
-import org.terasology.math.geom.Rect2f;
 import org.terasology.minimap.overlays.MinimapOverlay;
 import org.terasology.minimap.rendering.nui.layers.MinimapHUDElement;
 import org.terasology.nui.databinding.ReadOnlyBinding;
@@ -61,7 +61,7 @@ public class DefaultMinimapSystem extends BaseComponentSystem implements Minimap
 
     @Override
     public void initialise() {
-        Rect2f rc = Rect2f.createFromMinAndSize(0, 0, 1, 1);
+        Rectanglef rc = new Rectanglef(0, 0, 1, 1);
         minimapHUDElement = nuiManager.getHUD().addHUDElement(HUD_ELEMENT_MAP_ID, MinimapHUDElement.class, rc);
         minimapHUDElement.bindTargetEntity(new ReadOnlyBinding<EntityRef>() {
 
