@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.input.binds.minimap;
+package org.terasology.engine.input.binds.minimap;
 
-import org.terasology.input.BindButtonEvent;
-import org.terasology.input.DefaultBinding;
+import org.terasology.engine.input.BindButtonEvent;
+import org.terasology.engine.input.DefaultBinding;
+import org.terasology.engine.input.RegisterBindButton;
 import org.terasology.input.InputType;
 import org.terasology.input.Keyboard;
-import org.terasology.input.RegisterBindButton;
 
 /**
  * Registers a binding to increase the zoom level.

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.terasology.logic.players;
+package org.terasology.engine.logic.players;
 
 import org.terasology.minimap.overlays.MinimapOverlay;
 

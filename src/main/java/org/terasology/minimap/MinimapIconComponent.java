@@ -15,8 +15,8 @@
  */
 package org.terasology.minimap;
 
-import org.terasology.entitySystem.Component;
-import org.terasology.network.Replicate;
+import org.terasology.engine.entitySystem.Component;
+import org.terasology.engine.network.Replicate;
 
 /**
  * Information about an icon to be drawn on the mini map.
@@ -27,7 +27,7 @@ public class MinimapIconComponent implements Component {
     /**
      * The {@link org.terasology.assets.ResourceUrn} as string for the icon texture to be drawn on the mini map.
      *
-     * <strong>Note:</strong> The resource urn MUST point to a {@link org.terasology.rendering.assets.texture.Texture},
+     * <strong>Note:</strong> The resource urn MUST point to a {@link org.terasology.engine.rendering.assets.texture.Texture},
      * sub-textures from atlas are currently not supported (the URN is of the form "{moduleName}:{resourceName}").
      */
     @Replicate
