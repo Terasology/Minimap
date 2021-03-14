@@ -1,7 +1,7 @@
 // Copyright 2021 The Terasology Foundation
 // SPDX-License-Identifier: Apache-2.0
 
-package org.terasology.engine.logic.players;
+package org.terasology.logic.players;
 
 import org.joml.RoundingMode;
 import org.joml.Vector3ic;
@@ -12,14 +12,13 @@ import org.terasology.engine.entitySystem.event.EventPriority;
 import org.terasology.engine.entitySystem.event.ReceiveEvent;
 import org.terasology.engine.entitySystem.systems.BaseComponentSystem;
 import org.terasology.engine.entitySystem.systems.RegisterSystem;
-import org.terasology.engine.input.binds.minimap.DecreaseZoomButton;
-import org.terasology.engine.input.binds.minimap.IncreaseZoomButton;
-import org.terasology.engine.input.binds.minimap.ToggleMinimapButton;
 import org.terasology.engine.logic.characters.AliveCharacterComponent;
 import org.terasology.engine.logic.characters.CharacterComponent;
-import org.terasology.logic.health.BeforeDestroyEvent;
-import org.terasology.logic.health.DoDestroyEvent;
+import org.terasology.engine.logic.health.BeforeDestroyEvent;
+import org.terasology.engine.logic.health.DoDestroyEvent;
 import org.terasology.engine.logic.location.LocationComponent;
+import org.terasology.engine.logic.players.LocalPlayer;
+import org.terasology.engine.logic.players.PlayerCharacterComponent;
 import org.terasology.engine.logic.players.event.OnPlayerRespawnedEvent;
 import org.terasology.engine.logic.players.event.OnPlayerSpawnedEvent;
 import org.terasology.engine.registry.In;
@@ -28,6 +27,9 @@ import org.terasology.engine.rendering.nui.NUIManager;
 import org.terasology.engine.world.WorldProvider;
 import org.terasology.engine.world.block.entity.placement.PlaceBlocks;
 import org.terasology.engine.world.generator.WorldGenerator;
+import org.terasology.input.binds.minimap.DecreaseZoomButton;
+import org.terasology.input.binds.minimap.IncreaseZoomButton;
+import org.terasology.input.binds.minimap.ToggleMinimapButton;
 import org.terasology.joml.geom.Rectanglef;
 import org.terasology.minimap.overlays.MinimapOverlay;
 import org.terasology.minimap.rendering.nui.layers.MinimapHUDElement;
