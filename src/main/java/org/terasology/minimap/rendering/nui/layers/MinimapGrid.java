@@ -16,7 +16,7 @@ import org.joml.Vector2ic;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 import org.joml.Vector3ic;
-import org.terasology.assets.ResourceUrn;
+import org.terasology.gestalt.assets.ResourceUrn;
 import org.terasology.engine.entitySystem.entity.EntityRef;
 import org.terasology.engine.logic.location.LocationComponent;
 import org.terasology.engine.rendering.assets.texture.BasicTextureRegion;
