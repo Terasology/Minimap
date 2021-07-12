@@ -12,11 +12,16 @@ import org.terasology.gestalt.entitysystem.component.Component;
  */
 public class MinimapIconComponent implements Component<MinimapIconComponent> {
     /**
-     * The {@link org.terasology.assets.ResourceUrn} as string for the icon texture to be drawn on the mini map.
+     * The {@link org.terasology.gestalt.assets.ResourceUrn} as string for the icon texture to be drawn on the mini map.
      *
      * <strong>Note:</strong> The resource urn MUST point to a {@link org.terasology.engine.rendering.assets.texture.Texture},
      * sub-textures from atlas are currently not supported (the URN is of the form "{moduleName}:{resourceName}").
      */
     @Replicate
     public String iconUrn;
+
+    @Override
+    public void copy(MinimapIconComponent other) {
+        this.iconUrn = other.iconUrn;
+    }
 }
