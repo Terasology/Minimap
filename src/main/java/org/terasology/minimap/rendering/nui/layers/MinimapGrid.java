@@ -16,6 +16,8 @@ import org.joml.Vector2ic;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 import org.joml.Vector3ic;
+import org.terasology.engine.registry.CoreRegistry;
+import org.terasology.engine.world.block.tiles.WorldAtlas;
 import org.terasology.gestalt.assets.ResourceUrn;
 import org.terasology.engine.entitySystem.entity.EntityRef;
 import org.terasology.engine.logic.location.LocationComponent;
@@ -94,11 +96,8 @@ public class MinimapGrid extends CoreWidget {
 
                     BlockPart blockPart = BlockPart.TOP;
 
-                    // TODO: security issues
-                    // WorldAtlas worldAtlas = CoreRegistry.get(WorldAtlas.class);
-                    // float tileSize = worldAtlas.getRelativeTileSize();
-
-                    float tileSize = 16f / 256f; // 256f could be replaced by textureAtlas.getWidth();
+                    WorldAtlas worldAtlas = CoreRegistry.get(WorldAtlas.class);
+                    float tileSize = worldAtlas.getRelativeTileSize();
 
                     Vector2fc textureAtlasPos = primaryAppearance.getTextureAtlasPos(blockPart);
 
