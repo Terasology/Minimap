@@ -21,7 +21,7 @@ public class MinimapIconComponent implements Component<MinimapIconComponent> {
     public String iconUrn;
 
     @Override
-    public void copy(MinimapIconComponent other) {
+    public void copyFrom(MinimapIconComponent other) {
         this.iconUrn = other.iconUrn;
     }
 }
