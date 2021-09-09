@@ -9,6 +9,7 @@ import org.terasology.engine.core.modes.loadProcesses.AwaitedLocalCharacterSpawn
 import org.terasology.engine.entitySystem.entity.EntityManager;
 import org.terasology.engine.entitySystem.entity.EntityRef;
 import org.terasology.engine.entitySystem.event.EventPriority;
+import org.terasology.engine.entitySystem.event.Priority;
 import org.terasology.engine.entitySystem.event.ReceiveEvent;
 import org.terasology.engine.entitySystem.systems.BaseComponentSystem;
 import org.terasology.engine.entitySystem.systems.RegisterSystem;
@@ -149,7 +150,8 @@ public class DefaultMinimapSystem extends BaseComponentSystem implements Minimap
     }
 
 
-    @ReceiveEvent(priority = EventPriority.PRIORITY_HIGH, components = {CharacterComponent.class,
+    @Priority(EventPriority.PRIORITY_HIGH)
+    @ReceiveEvent(components = {CharacterComponent.class,
                                     AliveCharacterComponent.class, PlayerCharacterComponent.class})
     public void beforeDestroy(BeforeDestroyEvent event, EntityRef player) {
         if (minimapHUDElement != null) {
