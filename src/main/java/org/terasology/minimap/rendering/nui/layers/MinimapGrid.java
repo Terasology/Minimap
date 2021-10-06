@@ -301,7 +301,7 @@ public class MinimapGrid extends CoreWidget {
                                 // TODO: move into quaternion
                                 float rotation = -(float) Math.atan2(2.0 * (q.y * q.w + q.x * q.z), 1.0 - 2.0 * (q.y * q.y - q.z * q.z));
                                 Rectanglei screenArea = RectUtility.createFromMinAndSize(arrowX + xOffset, arrowY + zOffset, arrowWidth, arrowHeight);
-                                CanvasUtility.drawMesh(canvas, mesh, material, screenArea, new Quaternionf().rotationYXZ(0, 0, rotation), new Vector3f(), 0.8f);
+                                CanvasUtility.drawMesh(canvas, mesh, icon, screenArea, new Quaternionf().rotationYXZ(0, 0, rotation), new Vector3f(), 0.8f);
                             }
                         });
                     });
