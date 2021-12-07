@@ -11,6 +11,7 @@ import org.terasology.engine.entitySystem.entity.EntityRef;
 import org.terasology.engine.entitySystem.event.EventPriority;
 import org.terasology.engine.entitySystem.event.Priority;
 import org.terasology.engine.entitySystem.systems.BaseComponentSystem;
+import org.terasology.engine.entitySystem.systems.RegisterMode;
 import org.terasology.engine.entitySystem.systems.RegisterSystem;
 import org.terasology.engine.logic.characters.AliveCharacterComponent;
 import org.terasology.engine.logic.characters.CharacterComponent;
@@ -39,7 +40,7 @@ import org.terasology.nui.databinding.ReadOnlyBinding;
 /**
  * This class represents the connection to the event system and maintains the HUD element.
  */
-@RegisterSystem
+@RegisterSystem(RegisterMode.CLIENT)
 @Share(MinimapSystem.class)
 public class DefaultMinimapSystem extends BaseComponentSystem implements MinimapSystem {
 
