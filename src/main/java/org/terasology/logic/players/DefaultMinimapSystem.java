@@ -9,8 +9,9 @@ import org.terasology.engine.core.modes.loadProcesses.AwaitedLocalCharacterSpawn
 import org.terasology.engine.entitySystem.entity.EntityManager;
 import org.terasology.engine.entitySystem.entity.EntityRef;
 import org.terasology.engine.entitySystem.event.EventPriority;
-import org.terasology.engine.entitySystem.event.ReceiveEvent;
+import org.terasology.engine.entitySystem.event.Priority;
 import org.terasology.engine.entitySystem.systems.BaseComponentSystem;
+import org.terasology.engine.entitySystem.systems.RegisterMode;
 import org.terasology.engine.entitySystem.systems.RegisterSystem;
 import org.terasology.engine.logic.characters.AliveCharacterComponent;
 import org.terasology.engine.logic.characters.CharacterComponent;
@@ -27,6 +28,7 @@ import org.terasology.engine.rendering.nui.NUIManager;
 import org.terasology.engine.world.WorldProvider;
 import org.terasology.engine.world.block.entity.placement.PlaceBlocks;
 import org.terasology.engine.world.generator.WorldGenerator;
+import org.terasology.gestalt.entitysystem.event.ReceiveEvent;
 import org.terasology.input.binds.minimap.DecreaseZoomButton;
 import org.terasology.input.binds.minimap.IncreaseZoomButton;
 import org.terasology.input.binds.minimap.ToggleMinimapButton;
@@ -38,7 +40,7 @@ import org.terasology.nui.databinding.ReadOnlyBinding;
 /**
  * This class represents the connection to the event system and maintains the HUD element.
  */
-@RegisterSystem
+@RegisterSystem(RegisterMode.CLIENT)
 @Share(MinimapSystem.class)
 public class DefaultMinimapSystem extends BaseComponentSystem implements MinimapSystem {
 
@@ -149,7 +151,8 @@ public class DefaultMinimapSystem extends BaseComponentSystem implements Minimap
     }
 
 
-    @ReceiveEvent(priority = EventPriority.PRIORITY_HIGH, components = {CharacterComponent.class,
+    @Priority(EventPriority.PRIORITY_HIGH)
+    @ReceiveEvent(components = {CharacterComponent.class,
                                     AliveCharacterComponent.class, PlayerCharacterComponent.class})
     public void beforeDestroy(BeforeDestroyEvent event, EntityRef player) {
         if (minimapHUDElement != null) {
